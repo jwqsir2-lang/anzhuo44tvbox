@@ -104,7 +104,7 @@ public class StartupUpdateFlowTest {
     @Test public void networkFailureIsSilentAndHomeRemainsUsable() throws Exception {
         error = true; ActivityController<MainActivity> screen = launch(null); AsyncTest.await(app.localUpdates.done);
         assertNull(ReflectionHelpers.getField(screen.get(), "startupPrompt")); assertEquals(0, ShadowToast.shownToastCount());
-        assertEquals(MainActivity.Tab.HOME, ReflectionHelpers.getField(screen.get(), "current"));
+        assertEquals(MainActivity.Tab.DOUBAN, ReflectionHelpers.getField(screen.get(), "current"));
     }
     @Test public void leavingActivityCancelsInFlightCheckAndLateCallbacks() throws Exception {
         stalled = true; ActivityController<MainActivity> screen = launch(null); assertTrue(received.await(2, TimeUnit.SECONDS));

@@ -83,6 +83,9 @@ public class NavigationStateTest {
             }
         });
         controller = Robolectric.buildActivity(MainActivity.class).create().start().resume().postResume().visible();
+        // 默认首页已改为 DOUBAN（豆瓣热播），本组用例针对「影视」页，需显式切过去。
+        controller.get().selectTab(MainActivity.Tab.HOME, false);
+        controller.get().getSupportFragmentManager().executePendingTransactions();
     }
     @After public void tearDown() throws Exception {
         controller.pause().stop().destroy(); TvBoxApp.get().executors().shutdown(); server.shutdown();
@@ -267,6 +270,9 @@ public class NavigationStateTest {
         server.setDispatcher(dispatcher);
         ((LocalApplication) RuntimeEnvironment.getApplication()).configure(sources);
         controller = Robolectric.buildActivity(MainActivity.class).create().start().resume().postResume().visible();
+        // 默认首页已改为 DOUBAN（豆瓣热播），本组用例针对「影视」页，需显式切过去。
+        controller.get().selectTab(MainActivity.Tab.HOME, false);
+        controller.get().getSupportFragmentManager().executePendingTransactions();
     }
 
     private static MockResponse homeMovies() {
