@@ -16,6 +16,8 @@ import com.tvbox.android44.domain.model.ApiLine;
 import com.tvbox.android44.domain.model.AiRecommendItem;
 import com.tvbox.android44.domain.model.Movie;
 import com.tvbox.android44.domain.model.WatchHistoryItem;
+import androidx.fragment.app.Fragment;
+
 import com.tvbox.android44.feature.home.HomeFragment;
 import com.tvbox.android44.feature.main.MainActivity;
 import com.tvbox.android44.feature.search.SearchFragment;
@@ -163,12 +165,15 @@ public class NavigationStateTest {
             }
         }, "primary", "backup");
 
-        View retry = controller.get().findViewById(R.id.state_retry);
-        await(() -> retry.getVisibility() == View.VISIBLE);
+        MainActivity activity = controller.get();
+        await(() -> {
+            View r = activity.findViewById(R.id.state_retry);
+            return r != null && r.getVisibility() == View.VISIBLE;
+        });
         assertEquals(Arrays.asList("/primary/", "/backup/"), new ArrayList<>(pages));
         primaryRecovered.set(true);
-        retry.performClick();
-        RecyclerView grid = controller.get().findViewById(R.id.home_grid);
+        activity.findViewById(R.id.state_retry).performClick();
+        RecyclerView grid = activity.findViewById(R.id.home_grid);
         await(() -> grid.getAdapter().getItemCount() == 1);
         assertEquals(Arrays.asList("/primary/", "/backup/", "/primary/"), new ArrayList<>(pages));
         Movie shown = (Movie) ((PosterGridAdapter) grid.getAdapter()).entries().get(0).payload;
@@ -454,6 +459,9 @@ public class NavigationStateTest {
         activity.getSupportFragmentManager().executePendingTransactions();
         activity.onBackPressed();
         activity.getSupportFragmentManager().executePendingTransactions();
-        assertFalse(activity.getSupportFragmentManager().findFragmentByTag("HOME").isHidden());
+        // 返回键落点是首页（默认 Tab = DOUBAN），不是「影视」页
+        Fragment homeTab = activity.getSupportFragmentManager().findFragmentByTag("DOUBAN");
+        assertNotNull("返回后应回到默认首页", homeTab);
+        assertFalse("返回后默认首页必须可见", homeTab.isHidden());
     }
 }
