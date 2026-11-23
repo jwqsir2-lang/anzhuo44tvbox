@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
 public class LegacyCertificateTrustTest {
 
     private InputStream pem() {
-        return RuntimeEnvironment.getApplication().getResources().openRawResource(R.raw.isrg_roots);
+        return RuntimeEnvironment.getApplication().getResources().openRawResource(R.raw.trusted_roots);
     }
 
     /** 读出打包文件里的全部证书（X1 在前，X2 在后）。 */
@@ -60,13 +60,16 @@ public class LegacyCertificateTrustTest {
 
     @Test public void bundleContainsBothIsrgRootsWithVerifiedFingerprints() throws Exception {
         List<X509Certificate> roots = bundledRoots();
-        assertEquals("X1 与 X2 都应打包", 2, roots.size());
+        assertEquals("X1 / X2 / DigiCert G2 三张根都应打包", 3, roots.size());
         assertEquals(LegacyCertificateTrust.ROOT_X1_SHA256,
                 LegacyCertificateTrust.fingerprintSha256(roots.get(0)));
         assertEquals(LegacyCertificateTrust.ROOT_X2_SHA256,
                 LegacyCertificateTrust.fingerprintSha256(roots.get(1)));
         assertTrue(roots.get(0).getSubjectX500Principal().getName().contains("ISRG Root X1"));
         assertTrue(roots.get(1).getSubjectX500Principal().getName().contains("ISRG Root X2"));
+        assertEquals(LegacyCertificateTrust.DIGICERT_G2_SHA256,
+                LegacyCertificateTrust.fingerprintSha256(roots.get(2)));
+        assertTrue(roots.get(2).getSubjectX500Principal().getName().contains("DigiCert Global Root G2"));
     }
 
     @Test public void trustManagerLoadsFromAndroidResources() throws Exception {
@@ -116,6 +119,8 @@ public class LegacyCertificateTrustTest {
             boolean isBundled = LegacyCertificateTrust.ROOT_X1_SHA256.equals(
                             LegacyCertificateTrust.fingerprintSha256(certificate))
                     || LegacyCertificateTrust.ROOT_X2_SHA256.equals(
+                            LegacyCertificateTrust.fingerprintSha256(certificate))
+                    || LegacyCertificateTrust.DIGICERT_G2_SHA256.equals(
                             LegacyCertificateTrust.fingerprintSha256(certificate));
             if (isBundled) continue;
             try {

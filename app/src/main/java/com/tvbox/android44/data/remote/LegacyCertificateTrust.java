@@ -21,6 +21,9 @@ import javax.net.ssl.X509TrustManager;
  *   <li>ISRG Root X2（ECDSA，2020）：新链（E 系列 / YE 系列中间证书）的回溯终点。
  *       部分站点（如使用 YE 系列叶子证书的 MacCMS 源）整条链要经过 X2 才能回到 X1，
  *       老系统缺 X2 会在中间证书校验处直接失败。</li>
+ *   <li>DigiCert Global Root G2（2013）：豆瓣等站点使用
+ *       （*.douban.com → GeoTrust TLS RSA CA G1 → DigiCert Global Root G2）。
+ *       Android 4.4 的老证书库只有 2006 年的 DigiCert 根，没有 G2。</li>
  * </ul>
  *
  * <p>指纹为硬编码白名单：传入的 PEM 只要有一张对不上就抛异常，
@@ -34,10 +37,13 @@ final class LegacyCertificateTrust implements X509TrustManager {
     /** ISRG Root X2 — SHA-256 指纹。 */
     static final String ROOT_X2_SHA256 =
             "69729b8e15a86efc177a57afb7171dfc64add28c2fca8cf1507e34453ccb1470";
+    /** DigiCert Global Root G2 — SHA-256 指纹（豆瓣等站点使用）。 */
+    static final String DIGICERT_G2_SHA256 =
+            "cb3ccbb76031e5e0138f8dd39a23f9de47ffc35e43c1144cea27d46a5ab1cb5f";
 
-    /** 单张根证书的指纹白名单（按传入顺序一一对应）。 */
+    /** 单张根证书的指纹白名单。 */
     static final String[] ROOT_SHA256_WHITELIST = {
-            ROOT_X1_SHA256, ROOT_X2_SHA256
+            ROOT_X1_SHA256, ROOT_X2_SHA256, DIGICERT_G2_SHA256
     };
 
     private final X509TrustManager system;

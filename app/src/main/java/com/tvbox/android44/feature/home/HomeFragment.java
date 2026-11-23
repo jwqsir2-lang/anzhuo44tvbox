@@ -329,9 +329,18 @@ public class HomeFragment extends Fragment implements PageFocusState.Owner, Hist
                         if (doubanSection == null || doubanAdapter == null) return;
                         List<DoubanHotItem> items = result == null ? null : result.data();
                         if (items == null || items.isEmpty()) {
+                            // 失败时记录原因，避免静默隐藏导致无法诊断
+                            String reason = "null-result";
+                            if (result != null && result.isFailure()) {
+                                com.tvbox.android44.common.Result.Failure f = result.asFailure();
+                                reason = f == null ? "failure" : String.valueOf(f);
+                            }
+                            android.util.Log.w("HomeFragment",
+                                    "豆瓣热播加载失败，隐藏区块: " + reason);
                             doubanSection.setVisibility(View.GONE);
                             return;
                         }
+                        android.util.Log.i("HomeFragment", "豆瓣热播加载成功: " + items.size() + " 条");
                         List<PosterEntry> entries = new ArrayList<PosterEntry>();
                         for (DoubanHotItem it : items) {
                             if (it == null || it.title == null || it.title.isEmpty()) continue;

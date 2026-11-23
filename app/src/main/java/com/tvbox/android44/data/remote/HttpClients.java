@@ -45,7 +45,7 @@ public final class HttpClients {
         // 这里补充 X1 + X2 两个公共根，仍保留域名校验与完整链路校验。
         if (android.os.Build.VERSION.SDK_INT < 26) {
             try (java.io.InputStream roots = com.tvbox.android44.app.TvBoxApp.get()
-                    .getResources().openRawResource(com.tvbox.android44.R.raw.isrg_roots)) {
+                    .getResources().openRawResource(com.tvbox.android44.R.raw.trusted_roots)) {
                 javax.net.ssl.X509TrustManager trustManager = LegacyCertificateTrust.fromRoots(roots);
                 javax.net.ssl.SSLContext context = javax.net.ssl.SSLContext.getInstance("TLS");
                 context.init(null, new javax.net.ssl.TrustManager[]{trustManager}, null);
