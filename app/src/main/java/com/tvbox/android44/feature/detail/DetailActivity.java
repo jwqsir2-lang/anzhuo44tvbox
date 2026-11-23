@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.tvbox.android44.R;
 import com.tvbox.android44.app.TvBoxApp;
+import com.tvbox.android44.data.local.FavoriteStore;
 import com.tvbox.android44.common.BaseActivity;
 import com.tvbox.android44.common.FocusScaler;
 import com.tvbox.android44.common.Result;
@@ -79,6 +80,7 @@ public class DetailActivity extends BaseActivity {
     private String apiId;
     private String movieId;
     private Movie movie;
+    private TextView favoriteBtn;
     private ChipAdapter lineAdapter;
     private EpisodeAdapter episodeAdapter;
     private MovieRepository.Request detailRequest;
@@ -120,6 +122,13 @@ public class DetailActivity extends BaseActivity {
         episodesView = findViewById(R.id.detail_episodes);
         continueBtn = findViewById(R.id.detail_continue);
         playBtn = findViewById(R.id.detail_play);
+        favoriteBtn = findViewById(R.id.detail_favorite);
+        favoriteBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleFavorite();
+            }
+        });
 
         linesView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         lineAdapter = new ChipAdapter(new ChipAdapter.OnChipClick() {
@@ -240,6 +249,7 @@ public class DetailActivity extends BaseActivity {
             return;
         }
         movie = result.data();
+        refreshFavoriteButton();
         renderDetail();
         state.showContent();
         startSupplement();
@@ -335,6 +345,29 @@ public class DetailActivity extends BaseActivity {
             }
         }
         return null;
+    }
+
+    /** 切换收藏状态并刷新按钮文字。 */
+    private void toggleFavorite() {
+        if (movie == null || favoriteBtn == null) return;
+        FavoriteStore.Item item = new FavoriteStore.Item();
+        item.movieId = movie.id;
+        item.apiLineId = movie.apiLineId;
+        item.apiLineName = movie.apiLineName;
+        item.movieName = movie.name;
+        item.posterUrl = movie.posterUrl;
+        item.typeName = movie.typeName;
+        item.remarks = movie.remarks;
+        boolean nowFavorite = TvBoxApp.get().favorites().toggle(item);
+        favoriteBtn.setText(nowFavorite
+                ? R.string.favorite_remove : R.string.favorite_add);
+    }
+
+    /** 收藏按钮状态跟随当前影片刷新。 */
+    private void refreshFavoriteButton() {
+        if (favoriteBtn == null || movie == null) return;
+        boolean fav = TvBoxApp.get().favorites().isFavorite(movie.apiLineId, movie.id);
+        favoriteBtn.setText(fav ? R.string.favorite_remove : R.string.favorite_add);
     }
 
     /** 选择线路：优先按当前集标题匹配新线路，无法匹配限制到合法索引。 */

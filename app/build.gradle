@@ -22,8 +22,8 @@ android {
         applicationId "com.tvbox.android44"
         minSdk 16          // Android 4.1 / API 16 compatibility baseline
         targetSdk 28       // 侧载版基线
-        versionCode injectedProp('TVBOX_VERSION_CODE', '8').toInteger()
-        versionName injectedProp('TVBOX_VERSION_NAME', '0.0.7')
+        versionCode injectedProp('TVBOX_VERSION_CODE', '20').toInteger()
+        versionName injectedProp('TVBOX_VERSION_NAME', '0.4.0')
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
 
@@ -59,17 +59,16 @@ android {
     }
 
     signingConfigs {
-        // 签名参数只从 local.properties / Gradle 属性注入，仓库不含口令
+        // 本项目自有的固定签名（app/tvbox-release.p12）。
+        // 目的：与上游 ZxxXinI 的签名彻底分开，安装/升级不再触发签名冲突。
+        // 该 keystore 只用于内部侧载分发，口令固定公开；仍可通过 TVBOX_STORE_FILE 等属性覆盖。
         releaseSigning {
-            def storeFilePath = injectedProp('TVBOX_STORE_FILE', '')
-            if (storeFilePath != '') {
-                ['TVBOX_STORE_PASSWORD', 'TVBOX_KEY_ALIAS', 'TVBOX_KEY_PASSWORD'].each { name ->
-                    if (injectedProp(name, '').isEmpty()) throw new GradleException("缺少签名配置: ${name}")
-                }
+            def storeFilePath = injectedProp('TVBOX_STORE_FILE', 'app/tvbox-release.p12')
+            if (storeFilePath != '' && rootProject.file(storeFilePath).exists()) {
                 storeFile rootProject.file(storeFilePath)
-                storePassword injectedProp('TVBOX_STORE_PASSWORD', '')
-                keyAlias injectedProp('TVBOX_KEY_ALIAS', '')
-                keyPassword injectedProp('TVBOX_KEY_PASSWORD', '')
+                storePassword injectedProp('TVBOX_STORE_PASSWORD', 'tvbox44pass')
+                keyAlias injectedProp('TVBOX_KEY_ALIAS', 'tvbox')
+                keyPassword injectedProp('TVBOX_KEY_PASSWORD', 'tvbox44pass')
             }
         }
     }
@@ -79,14 +78,12 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            def storeFilePath = injectedProp('TVBOX_STORE_FILE', '')
-            if (storeFilePath != '') {
+            def storeFilePath = injectedProp('TVBOX_STORE_FILE', 'app/tvbox-release.p12')
+            if (storeFilePath != '' && rootProject.file(storeFilePath).exists()) {
                 signingConfig signingConfigs.releaseSigning
+            } else if (injectedProp('TVBOX_REQUIRE_RELEASE_SIGNING', 'false').toBoolean()) {
+                throw new GradleException('正式发布需要配置 TVBOX_STORE_FILE 及签名参数')
             } else {
-                if (injectedProp('TVBOX_REQUIRE_RELEASE_SIGNING', 'false').toBoolean()) {
-                    throw new GradleException('正式发布需要配置 TVBOX_STORE_FILE 及签名参数')
-                }
-                // 本机验证构建的回退方案；正式发布必须注入真实签名
                 signingConfig signingConfigs.debug
             }
         }

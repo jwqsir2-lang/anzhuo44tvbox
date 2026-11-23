@@ -35,6 +35,14 @@
         </LinearLayout>
 
         <TextView
+            android:id="@+id/nav_douban"
+            style="@style/Widget.Tv.NavButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="14dp"
+            android:text="@string/nav_douban" />
+
+        <TextView
             android:id="@+id/nav_history"
             style="@style/Widget.Tv.NavButton"
             android:layout_width="wrap_content"
@@ -43,20 +51,20 @@
             android:text="@string/nav_history_shortcut" />
 
         <TextView
+            android:id="@+id/nav_home"
+            style="@style/Widget.Tv.NavButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="14dp"
+            android:text="@string/nav_home" />
+
+        <TextView
             android:id="@+id/nav_search"
             style="@style/Widget.Tv.NavButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="14dp"
             android:text="@string/nav_search_shortcut" />
-
-        <TextView
-            android:id="@+id/nav_recommend"
-            style="@style/Widget.Tv.NavButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="14dp"
-            android:text="@string/nav_recommend_shortcut" />
 
         <TextView
             android:id="@+id/nav_live_tv"
@@ -75,6 +83,14 @@
             android:layout_marginRight="14dp"
             android:visibility="gone"
             android:text="@string/nav_platform_live" />
+
+        <TextView
+            android:id="@+id/nav_favorite"
+            style="@style/Widget.Tv.NavButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="14dp"
+            android:text="@string/nav_favorite" />
 
         <TextView
             android:id="@+id/nav_settings"

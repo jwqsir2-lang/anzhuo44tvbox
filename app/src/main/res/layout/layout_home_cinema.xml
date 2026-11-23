@@ -80,36 +80,10 @@
             android:paddingTop="8dp"
             android:paddingBottom="8dp">
 
-            <!-- 豆瓣热播：横向滚动，点击按片名在当前源搜索 -->
-            <LinearLayout
-                android:id="@+id/douban_section"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/douban_hot_title"
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/douban_row"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:clipToPadding="false"
-                    android:scrollbars="none" />
-            </LinearLayout>
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/home_tabs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
                 android:scrollbars="none" />
 
             <androidx.recyclerview.widget.RecyclerView

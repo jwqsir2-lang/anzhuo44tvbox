@@ -59,7 +59,7 @@ public class SettingsFragment extends Fragment {
     private static final int REQUEST_SAVE_APK_STORAGE = 4107;
     private static final String STATE_REMOTE_COLUMNS = "remote_columns";
     private static final int[][] REMOTE_ROWS = {
-            {R.id.settings_theme, R.id.settings_font},
+            {R.id.settings_theme, R.id.settings_font, R.id.settings_filter},
             {R.id.settings_api},
             {R.id.settings_api_manage, R.id.settings_api_qr},
             {R.id.settings_ai_provider},
@@ -136,11 +136,37 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 SettingsRepository s = TvBoxApp.get().settings();
-                boolean next = !s.contentFilterEnabled();
-                s.setContentFilterEnabled(next);
-                ContentFilter.setEnabled(next);
-                // 过滤状态影响列表映射结果，需重新拉取；重建 Activity 最省事且与主题切换同一路径
-                recreateActivity();
+                if (s.hasContentFilterPin()) {
+                    // 已设密码：先校验，通过后才允许切换
+                    askPin(R.string.filter_pin_verify, "", new PinCallback() {
+                        @Override
+                        public void onPin(String pin) {
+                            SettingsRepository st = TvBoxApp.get().settings();
+                            if (!pin.equals(st.contentFilterPin())) {
+                                toast(getString(R.string.filter_pin_wrong));
+                                return;
+                            }
+                            applyFilterToggle();
+                        }
+                    });
+                } else {
+                    applyFilterToggle();
+                }
+            }
+        });
+        // 长按过滤按钮 → 设置/清除修改密码
+        btnFilterView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                askPin(R.string.filter_pin_prompt, "", new PinCallback() {
+                    @Override
+                    public void onPin(String pin) {
+                        TvBoxApp.get().settings().setContentFilterPin(pin);
+                        toast(pin.isEmpty() ? "已清除密码" : "密码已保存");
+                        refresh();
+                    }
+                });
+                return true;
             }
         });
         btnApi.setOnClickListener(new View.OnClickListener() {
@@ -357,6 +383,51 @@ public class SettingsFragment extends Fragment {
         btnCheckToggle.setText(getString(R.string.startup_update_label, getString(s.checkUpdateOnStart() ? R.string.enabled : R.string.disabled)));
         btnIptv.setText(getString(R.string.iptv_url_label, s.iptvUrl()));
         btnPlatform.setText(getString(R.string.platform_url_label, s.platformLiveUrl()));
+    }
+
+    // ===== 内容过滤 / 密码 =====
+
+    interface PinCallback {
+        void onPin(String pin);
+    }
+
+    /** 弹出密码输入框（数字键）。留空提交表示清除密码。 */
+    private void askPin(int titleRes, String hint, final PinCallback cb) {
+        if (getActivity() == null) return;
+        final android.widget.EditText input = new android.widget.EditText(getActivity());
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER
+                | android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD);
+        input.setHint(hint);
+        input.setSingleLine(true);
+        int pad = (int) (getResources().getDisplayMetrics().density * 12);
+        input.setPadding(pad, pad, pad, pad);
+        new androidx.appcompat.app.AlertDialog.Builder(getActivity(), R.style.TvDialog)
+                .setTitle(titleRes)
+                .setView(input)
+                .setPositiveButton(R.string.save, new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(android.content.DialogInterface d, int which) {
+                        cb.onPin(input.getText() == null ? "" : input.getText().toString().trim());
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void applyFilterToggle() {
+        SettingsRepository s = TvBoxApp.get().settings();
+        boolean next = !s.contentFilterEnabled();
+        s.setContentFilterEnabled(next);
+        ContentFilter.setEnabled(next);
+        // 过滤状态影响列表映射结果，需重新拉取；重建 Activity 与主题切换同一路径
+        recreateActivity();
+    }
+
+    private void toast(String msg) {
+        if (getActivity() != null) {
+            android.widget.Toast.makeText(getActivity(), msg,
+                    android.widget.Toast.LENGTH_SHORT).show();
+        }
     }
 
     // ===== 外观 =====

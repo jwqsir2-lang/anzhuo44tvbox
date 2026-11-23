@@ -28,11 +28,9 @@ import com.tvbox.android44.common.ui.PosterEntry;
 import com.tvbox.android44.common.ui.PosterGridAdapter;
 import com.tvbox.android44.data.local.SettingsRepository;
 import com.tvbox.android44.data.local.HistoryStore;
-import com.tvbox.android44.data.repository.DoubanRepository;
 import com.tvbox.android44.data.repository.MovieRepository;
 import com.tvbox.android44.domain.model.ApiLine;
 import com.tvbox.android44.domain.model.Category;
-import com.tvbox.android44.domain.model.DoubanHotItem;
 import com.tvbox.android44.domain.model.Movie;
 import com.tvbox.android44.domain.model.PagedMovies;
 import com.tvbox.android44.domain.model.PlaySource;
@@ -65,10 +63,6 @@ public class HomeFragment extends Fragment implements PageFocusState.Owner, Hist
     private View continueSection;
     private RecyclerView continueGrid;
     private PosterGridAdapter continueAdapter;
-    private View doubanSection;
-    private RecyclerView doubanRow;
-    private PosterGridAdapter doubanAdapter;
-    private DoubanRepository.RequestHandle doubanHandle;
     private PosterGridAdapter adapter;
     private ChipAdapter tabsAdapter;
     private ChipAdapter subTabsAdapter;
@@ -130,7 +124,6 @@ public class HomeFragment extends Fragment implements PageFocusState.Owner, Hist
         continueSection = null;
         continueGrid = null;
         continueAdapter = null;
-        bindDoubanRow(root);
         if (cinema) {
             bindCinemaTheme(root);
         }
@@ -287,75 +280,6 @@ public class HomeFragment extends Fragment implements PageFocusState.Owner, Hist
     private View heroContainer;
     private int fullHeroHeight;
     private PosterEntry heroEntry;
-
-    // ===== 豆瓣热播 =====
-
-    /**
-     * 绑定首页顶部豆瓣热播横条。
-     * 布局中不存在该区块（如影院主题改动）时静默跳过。
-     * 点击条目 → 携带片名跳到搜索页，在当前源里找可播放的资源。
-     */
-    private void bindDoubanRow(View root) {
-        doubanSection = root.findViewById(R.id.douban_section);
-        doubanRow = root.findViewById(R.id.douban_row);
-        if (doubanSection == null || doubanRow == null) {
-            return;
-        }
-        doubanRow.setLayoutManager(new LinearLayoutManager(
-                getActivity(), LinearLayoutManager.HORIZONTAL, false));
-        doubanAdapter = new PosterGridAdapter(new PosterGridAdapter.OnPosterClick() {
-            @Override
-            public void onPosterClick(PosterEntry entry, int position) {
-                if (entry == null || getActivity() == null) return;
-                if (getActivity() instanceof MainActivity) {
-                    ((MainActivity) getActivity()).switchToSearchWithQuery(entry.title);
-                }
-            }
-        }, 4f / 3f, R.layout.item_douban_hot);
-        doubanRow.setAdapter(doubanAdapter);
-        loadDouban();
-    }
-
-    /** 拉取豆瓣热播（电影）。失败或为空时整块隐藏，不影响首页主内容。 */
-    private void loadDouban() {
-        if (doubanSection == null || doubanAdapter == null) {
-            return;
-        }
-        doubanHandle = TvBoxApp.get().douban().hot(
-                com.tvbox.android44.data.remote.DoubanClient.CATEGORY_MOVIE, 1,
-                new DoubanRepository.Callback() {
-                    @Override
-                    public void onResult(Result<List<DoubanHotItem>> result) {
-                        if (doubanSection == null || doubanAdapter == null) return;
-                        List<DoubanHotItem> items = result == null ? null : result.data();
-                        if (items == null || items.isEmpty()) {
-                            // 失败时记录原因，避免静默隐藏导致无法诊断
-                            String reason = "null-result";
-                            if (result != null && result.isFailure()) {
-                                com.tvbox.android44.common.Result.Failure f = result.asFailure();
-                                reason = f == null ? "failure" : String.valueOf(f);
-                            }
-                            android.util.Log.w("HomeFragment",
-                                    "豆瓣热播加载失败，隐藏区块: " + reason);
-                            doubanSection.setVisibility(View.GONE);
-                            return;
-                        }
-                        android.util.Log.i("HomeFragment", "豆瓣热播加载成功: " + items.size() + " 条");
-                        List<PosterEntry> entries = new ArrayList<PosterEntry>();
-                        for (DoubanHotItem it : items) {
-                            if (it == null || it.title == null || it.title.isEmpty()) continue;
-                            // 副标题位置显示评分，没有评分就显示年份
-                            String sub = it.rating > 0
-                                    ? getString(R.string.douban_rating, it.rating)
-                                    : (it.year == null ? "" : it.year);
-                            entries.add(new PosterEntry("douban-" + it.id, it.title, sub,
-                                    it.posterUrl, it));
-                        }
-                        doubanAdapter.setEntries(entries);
-                        doubanSection.setVisibility(entries.isEmpty() ? View.GONE : View.VISIBLE);
-                    }
-                });
-    }
 
     private void bindCinemaTheme(View root) {
         // 传统布局已移除 Hero 区（大图 + 标题 + 播放/详情），
@@ -782,13 +706,6 @@ public class HomeFragment extends Fragment implements PageFocusState.Owner, Hist
         cancelRequests();
         TvBoxApp.get().history().removeListener(this);
         super.onDestroyView();
-        if (doubanHandle != null) {
-            doubanHandle.cancel();
-            doubanHandle = null;
-        }
-        doubanSection = null;
-        doubanRow = null;
-        doubanAdapter = null;
         continueGrid = null;
         heroContainer = null;
         grid = null;

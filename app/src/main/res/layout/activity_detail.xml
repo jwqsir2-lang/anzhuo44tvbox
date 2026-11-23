@@ -105,6 +105,14 @@
                     android:text="@string/continue_playback" />
 
                 <TextView
+                    android:id="@+id/detail_favorite"
+                    style="@style/Widget.Tv.NavButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="14dp"
+                    android:text="@string/favorite_add" />
+
+                <TextView
                     android:id="@+id/detail_play"
                     style="@style/Widget.Tv.NavButton"
                     android:layout_width="wrap_content"

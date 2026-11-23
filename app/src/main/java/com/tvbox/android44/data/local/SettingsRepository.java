@@ -59,6 +59,8 @@ public class SettingsRepository {
     private static final String KEY_AUTO_LINE = "auto_line_switch";
     private static final String KEY_CHECK_UPDATE = "check_update_on_start";
     private static final String KEY_CONTENT_FILTER = "content_filter_enabled";
+    private static final String KEY_FILTER_PIN = "content_filter_pin";
+    private static final String KEY_FAVORITES = "favorites";
     private static final String KEY_IPTV_URL = "iptv_url";
     private static final String KEY_PLATFORM_URL = "platform_live_url";
 
@@ -201,6 +203,19 @@ public class SettingsRepository {
 
     public void setContentFilterEnabled(boolean enabled) {
         prefs.edit().putBoolean(KEY_CONTENT_FILTER, enabled).apply();
+    }
+
+    /** 过滤开关的修改密码；空串表示未设置。 */
+    public String contentFilterPin() {
+        return prefs.getString(KEY_FILTER_PIN, "");
+    }
+
+    public void setContentFilterPin(String pin) {
+        prefs.edit().putString(KEY_FILTER_PIN, pin == null ? "" : pin.trim()).apply();
+    }
+
+    public boolean hasContentFilterPin() {
+        return !contentFilterPin().isEmpty();
     }
 
     // ===== AI =====

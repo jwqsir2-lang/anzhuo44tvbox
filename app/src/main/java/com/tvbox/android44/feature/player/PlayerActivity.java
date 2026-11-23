@@ -325,6 +325,19 @@ public class PlayerActivity extends AppCompatActivity implements Player.Listener
             }
         });
 
+        findViewById(R.id.player_skip_head).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (player == null) return;
+                long target = SKIP_INTRO_SECONDS * 1000L;
+                long dur = player.getDuration();
+                if (dur > 0 && target > dur - 5000L) target = Math.max(0, dur - 5000L);
+                player.seekTo(target);
+                resumePosition = target;
+                showHint(getString(R.string.skip_intro_seconds, (int) SKIP_INTRO_SECONDS));
+                v.setVisibility(View.GONE);
+            }
+        });
         findViewById(R.id.player_error_retry).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -954,9 +967,23 @@ public class PlayerActivity extends AppCompatActivity implements Player.Listener
         return 0;
     }
 
+    /** 片头长度（秒）。片头区间内显示「跳过片头」按钮。 */
+    private static final long SKIP_INTRO_SECONDS = 90L;
+
     private void updateUiTime() {
-        if (player != null) {
-            controller.updateTime(player.getCurrentPosition(), player.getDuration());
+        if (player == null) return;
+        long pos = player.getCurrentPosition();
+        long dur = player.getDuration();
+        controller.updateTime(pos, dur);
+        View skip = findViewById(R.id.player_skip_head);
+        if (skip != null) {
+            boolean inIntro = pos < SKIP_INTRO_SECONDS * 1000L
+                    && (dur <= 0 || dur > SKIP_INTRO_SECONDS * 1000L + 30000L);
+            skip.setVisibility(inIntro ? View.VISIBLE : View.GONE);
+            if (inIntro) {
+                ((android.widget.TextView) skip).setText(getString(
+                        R.string.skip_intro_seconds, (int) SKIP_INTRO_SECONDS));
+            }
         }
     }
 

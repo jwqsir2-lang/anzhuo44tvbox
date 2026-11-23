@@ -9,6 +9,7 @@ import com.bumptech.glide.Glide;
 import com.tvbox.android44.BuildConfig;
 import com.tvbox.android44.common.AppExecutors;
 import com.tvbox.android44.data.local.HealthStore;
+import com.tvbox.android44.data.local.FavoriteStore;
 import com.tvbox.android44.data.local.HistoryStore;
 import com.tvbox.android44.data.local.SettingsRepository;
 import com.tvbox.android44.data.remote.HttpClients;
@@ -35,6 +36,7 @@ public class TvBoxApp extends Application {
     private AppExecutors executors;
     private SettingsRepository settings;
     private HistoryStore history;
+    private FavoriteStore favorites;
     private HealthStore health;
     private MovieRepository movies;
     private MultiSourceSearch search;
@@ -72,6 +74,7 @@ public class TvBoxApp extends Application {
         com.tvbox.android44.domain.parser.ContentFilter.setEnabled(settings.contentFilterEnabled());
         HttpClients.init(executors);
 
+        favorites = new FavoriteStore(this);
         history = new HistoryStore(this);
         executors.disk().execute(new Runnable() {
             public void run() { history.load(); }
@@ -99,6 +102,10 @@ public class TvBoxApp extends Application {
 
     public SettingsRepository settings() {
         return settings;
+    }
+
+    public FavoriteStore favorites() {
+        return favorites;
     }
 
     public HistoryStore history() {

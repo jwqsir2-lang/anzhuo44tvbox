@@ -40,9 +40,9 @@ import java.util.Map;
  */
 public class MainActivity extends BaseActivity {
 
-    /** 内容页：HOME 为默认首页内容，其余对应顶部六个入口。 */
+    /** 内容页：DOUBAN 为默认首页（豆瓣热播），HOME 为影视（点播），其余对应顶部入口。 */
     public enum Tab {
-        HOME, HISTORY, SEARCH, RECOMMEND, LIVE_TV, PLATFORM_LIVE, SETTINGS
+        DOUBAN, HOME, HISTORY, FAVORITE, SEARCH, RECOMMEND, LIVE_TV, PLATFORM_LIVE, SETTINGS
     }
 
     private static final String STATE_TAB = "main_tab";
@@ -50,7 +50,7 @@ public class MainActivity extends BaseActivity {
 
     private final Map<Tab, Fragment> fragments = new HashMap<Tab, Fragment>();
     private final Map<Tab, Bundle> focusStates = new HashMap<Tab, Bundle>();
-    private Tab current = Tab.HOME;
+    private Tab current = Tab.DOUBAN;
     private boolean searchFromRecommend;
     private boolean searchMenuDown;
     private final SparseBooleanArray handledShortcuts = new SparseBooleanArray();
@@ -64,9 +64,11 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        bindNav(R.id.nav_douban, Tab.DOUBAN);
         bindNav(R.id.nav_history, Tab.HISTORY);
+        bindNav(R.id.nav_home, Tab.HOME);
+        bindNav(R.id.nav_favorite, Tab.FAVORITE);
         bindNav(R.id.nav_search, Tab.SEARCH);
-        bindNav(R.id.nav_recommend, Tab.RECOMMEND);
         bindNav(R.id.nav_settings, Tab.SETTINGS);
         getWindow().getDecorView().getViewTreeObserver().addOnGlobalFocusChangeListener(
                 new android.view.ViewTreeObserver.OnGlobalFocusChangeListener() {
@@ -79,7 +81,7 @@ public class MainActivity extends BaseActivity {
                     }
                 });
 
-        Tab restore = Tab.HOME;
+        Tab restore = Tab.DOUBAN;
         if (savedInstanceState != null && savedInstanceState.containsKey(STATE_TAB)) {
             for (Tab tab : Tab.values()) {
                 Bundle bookmark = savedInstanceState.getBundle("focus_" + tab.name());
@@ -203,14 +205,18 @@ public class MainActivity extends BaseActivity {
                 return new SettingsFragment();
             case HISTORY:
                 return new HistoryFragment();
+            case DOUBAN:
+                return new com.tvbox.android44.feature.douban.DoubanFragment();
+            case FAVORITE:
+                return new com.tvbox.android44.feature.favorite.FavoriteFragment();
             default:
                 return new HomeFragment();
         }
     }
 
     private void updateNavHighlight(Tab tab) {
-        int[] ids = {R.id.nav_history, R.id.nav_search, R.id.nav_recommend,
-                R.id.nav_settings};
+        int[] ids = {R.id.nav_douban, R.id.nav_history, R.id.nav_home,
+                R.id.nav_favorite, R.id.nav_search, R.id.nav_settings};
         for (int id : ids) {
             TextView tv = findViewById(id);
             boolean selected = tv.getTag() == tab;
@@ -303,8 +309,8 @@ public class MainActivity extends BaseActivity {
             selectTab(Tab.RECOMMEND, true);
             return;
         }
-        if (current != Tab.HOME) {
-            selectTab(Tab.HOME, true);
+        if (current != Tab.DOUBAN) {
+            selectTab(Tab.DOUBAN, true);
             return;
         }
         long now = SystemClock.elapsedRealtime();

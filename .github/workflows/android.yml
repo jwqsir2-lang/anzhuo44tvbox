@@ -36,8 +36,7 @@ jobs:
           --apk app/build/outputs/apk/release/app-release.apk
           --apk-url https://example.com/validation/app-release.apk
           --output-dir app/build/release-validation
-          --allow-debug-signing
-          --changelog 'CI validation build; requires formal signing before publication'
+          --changelog 'CI validation build; self-signed with project keystore'
       - name: Upload builds and verification reports
         if: always()
         uses: actions/upload-artifact@v4

@@ -107,6 +107,14 @@
                     android:text="@string/pause" />
 
                 <TextView
+                    android:id="@+id/player_skip_head"
+                    style="@style/Widget.Tv.NavButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="14dp"
+                    android:text="@string/skip_intro" />
+
+                <TextView
                     android:id="@+id/player_next"
                     style="@style/Widget.Tv.NavButton"
                     android:layout_width="wrap_content"

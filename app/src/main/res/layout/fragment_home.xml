@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  默认主题首页（传统 TVBox 风格）
-  结构：豆瓣热播横条 → 分类条 → 海报墙
-  改动：
+  影视页（原首页，传统 TVBox 风格）
+  结构：分类条 → 海报墙
+  说明：
     - Hero 大图已移除，纵向空间全部给海报网格
     - 「继续观看」区域已移除，历史统一在「历史」页续播
-    - 新增豆瓣热播（douban_section），无数据时 GONE 不占位置
+    - 豆瓣热播已独立成页，不再放在这里
 -->
 <com.tvbox.android44.common.StateLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/home_state"
@@ -20,31 +20,6 @@
         android:paddingRight="32dp"
         android:paddingTop="8dp"
         android:paddingBottom="8dp">
-
-        <!-- 豆瓣热播：横向滚动，点击按片名在当前源搜索 -->
-        <LinearLayout
-            android:id="@+id/douban_section"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/douban_hot_title"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/douban_row"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:clipToPadding="false"
-                android:scrollbars="none" />
-        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/home_tabs"
