@@ -413,10 +413,13 @@ public class NavigationStateTest {
         assertNotNull(settings);
 
         assertTrue(settings.findViewById(R.id.settings_font).requestFocus());
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_api);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_iptv);
+        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_iptv_test);
+        direction(KeyEvent.KEYCODE_DPAD_LEFT, R.id.settings_iptv);
         direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_font);
         direction(KeyEvent.KEYCODE_DPAD_UP, R.id.nav_settings);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_font);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_iptv);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_api);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_api_manage);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_provider);
