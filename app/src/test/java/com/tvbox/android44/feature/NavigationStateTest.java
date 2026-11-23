@@ -166,14 +166,11 @@ public class NavigationStateTest {
         }, "primary", "backup");
 
         MainActivity activity = controller.get();
-        // HOME 在默认页 DOUBAN 之后才 add，视图要等下一轮事务才存在；
-        // 这里先把事务推完，再等重试按钮出现。
+        // restartWithSources 已切到 HOME 并 commit，这里把事务落盘再取视图
         activity.getSupportFragmentManager().executePendingTransactions();
-        Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
-        await(() -> {
-            View r = activity.findViewById(R.id.state_retry);
-            return r != null && r.getVisibility() == View.VISIBLE;
-        });
+        assertNotNull("HOME 视图未挂载", activity.findViewById(R.id.home_grid));
+        View retry = activity.findViewById(R.id.state_retry);
+        await(() -> retry.getVisibility() == View.VISIBLE);
         assertEquals(Arrays.asList("/primary/", "/backup/"), new ArrayList<>(pages));
         primaryRecovered.set(true);
         activity.findViewById(R.id.state_retry).performClick();
