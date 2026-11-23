@@ -1111,12 +1111,6 @@ public class SettingsFragment extends Fragment {
         return s == null ? "" : s.trim();
     }
 
-    private void toast(String message) {
-        if (isAdded()) {
-            Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
-        }
-    }
-
     @Override
     public void onStop() {
         // Activity 不可见时必须释放配置会话（文档 09 §5）
