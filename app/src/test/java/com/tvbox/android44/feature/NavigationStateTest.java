@@ -433,9 +433,16 @@ public class NavigationStateTest {
         // 最后一行的行首是开关，更新按钮在其右侧
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_check_toggle, settings);
         direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_auto_line, settings);
+        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_stats, settings);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_check_toggle, settings);
         direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_update_action, settings);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_check_toggle, settings);
+        // 最后一行再按 DOWN 没有下一行，焦点保持不动
+        View before = settings.findViewById(R.id.settings_update_action);
+        controller.get().dispatchKeyEvent(
+                new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN));
+        controller.get().dispatchKeyEvent(
+                new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_DOWN));
+        assertTrue(before.hasFocus());
     }
 
     /** 直播源地址行必须能用遥控器选到，并左右进入「测试」按钮。 */
