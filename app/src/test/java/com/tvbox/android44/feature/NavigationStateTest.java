@@ -165,42 +165,25 @@ public class NavigationStateTest {
             }
         }, "primary", "backup");
 
-        MainActivity activity = controller.get();
-        activity.getSupportFragmentManager().executePendingTransactions();
-        Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
-        assertNotNull("HOME 视图未挂载", activity.findViewById(R.id.home_grid));
+        // 关键：Activity 根视图下同时挂着 DOUBAN 与 HOME 两套 StateLayout，
+        // view_state.xml 里的 state_retry 在两个布局里同名，Activity.findViewById 会命中最先
+        // 挂上去的那份（这里是被 hide 的 DOUBAN）。必须从 HOME 自己的视图里找。
+        HomeFragment home = (HomeFragment) controller.get()
+                .getSupportFragmentManager().findFragmentByTag("HOME");
+        assertNotNull("HOME Fragment 应已创建", home);
+        assertNotNull("HOME 视图应已 inflate", home.getView());
+        final View homeRoot = home.getView();
 
-        // 逐帧推进，把每轮真实状态记下来，失败时直接暴露卡点。
-        StringBuilder trace = new StringBuilder();
-        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(8);
-        View retryView = null;
-        while (System.nanoTime() < deadline) {
-            Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
-            retryView = activity.findViewById(R.id.state_retry);
-            View stateView = activity.findViewById(R.id.home_state);
-            trace.append("[retry=").append(retryView == null ? "null" : retryView.getVisibility())
-                 .append(",state=").append(stateView == null ? "null" : stateView.getVisibility())
-                 .append(",loading=").append(activity.findViewById(R.id.state_loading) == null ? "null"
-                        : activity.findViewById(R.id.state_loading).getVisibility())
-                 .append(",msg=").append(activity.findViewById(R.id.state_message) == null ? "null"
-                        : String.valueOf(((android.widget.TextView) activity.findViewById(R.id.state_message)).getText()))
-                 .append(",grid=").append(activity.findViewById(R.id.home_grid) == null ? "null"
-                        : ((RecyclerView) activity.findViewById(R.id.home_grid)).getAdapter() == null ? "noadapter"
-                        : ((RecyclerView) activity.findViewById(R.id.home_grid)).getAdapter().getItemCount())
-                 .append(",pages=").append(pages)
-                 .append("]\n");
-            if (retryView != null && retryView.getVisibility() == View.VISIBLE) break;
-            new java.util.concurrent.CountDownLatch(1).await(50, TimeUnit.MILLISECONDS);
-        }
-        assertNotNull("state_retry 不存在: " + trace, retryView);
-        assertEquals("重试按钮未出现\n" + trace, View.VISIBLE, retryView.getVisibility());
+        await(() -> {
+            View r = homeRoot.findViewById(R.id.state_retry);
+            return r != null && r.getVisibility() == View.VISIBLE;
+        });
         assertEquals(Arrays.asList("/primary/", "/backup/"), new ArrayList<>(pages));
+
         primaryRecovered.set(true);
-        View retry = activity.findViewById(R.id.state_retry);
-        assertNotNull("重试按钮应在全部来源失败后出现", retry);
-        retry.performClick();
-        RecyclerView grid = activity.findViewById(R.id.home_grid);
-        await(() -> grid.getAdapter().getItemCount() == 1);
+        homeRoot.findViewById(R.id.state_retry).performClick();
+        final RecyclerView grid = homeRoot.findViewById(R.id.home_grid);
+        await(() -> grid.getAdapter() != null && grid.getAdapter().getItemCount() == 1);
         assertEquals(Arrays.asList("/primary/", "/backup/", "/primary/"), new ArrayList<>(pages));
         Movie shown = (Movie) ((PosterGridAdapter) grid.getAdapter()).entries().get(0).payload;
         assertEquals("primary", shown.apiLineId);

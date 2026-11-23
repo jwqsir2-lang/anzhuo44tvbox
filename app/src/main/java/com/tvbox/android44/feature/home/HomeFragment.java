@@ -404,12 +404,7 @@ public class HomeFragment extends Fragment implements PageFocusState.Owner, Hist
     }
 
     private void loadCategory(int rid, List<String> typeIds, int pageToLoad, boolean allowBackup) {
-        android.util.Log.d("TVBOX_DBG", "loadCategory rid=" + rid + " active=" + activeApi.id
-                + " backup=" + allowBackup + " page=" + pageToLoad);
         movieRequest = TvBoxApp.get().movies().fetchByCategories(activeApi, typeIds, pageToLoad, result -> {
-            android.util.Log.d("TVBOX_DBG", "loadCategory.cb rid=" + rid + " current=" + isCurrentRequest(rid)
-                    + " cancelled=" + result.isCancelled() + " added=" + isAdded() + " view=" + (getView() != null)
-                    + " data=" + (result.data() != null));
             if (!isCurrentRequest(rid) || result.isCancelled()) return;
             PagedMovies data = result.data();
             if (data != null) {
@@ -456,9 +451,7 @@ public class HomeFragment extends Fragment implements PageFocusState.Owner, Hist
     }
 
     private void tryBackup(int rid, List<ApiLine> backups, int index) {
-        android.util.Log.d("TVBOX_DBG", "tryBackup rid=" + rid + " idx=" + index + "/" + backups.size());
         if (index == backups.size()) {
-            android.util.Log.d("TVBOX_DBG", "tryBackup EXHAUSTED -> showHomeError");
             setStatusText(null);
             showHomeError(getString(R.string.home_sources_unavailable), this::retryHome);
             return;
@@ -538,7 +531,6 @@ public class HomeFragment extends Fragment implements PageFocusState.Owner, Hist
     }
 
     private void showHomeError(String message, StateLayout.OnRetryListener retry) {
-        android.util.Log.d("TVBOX_DBG", "showHomeError: " + message);
         // 首页已移除「继续观看」区，continueGrid 为 null 时不要解引用。
         View focusedCard = continueGrid == null ? null : continueGrid.findFocus();
         state.showError(message, retry);
