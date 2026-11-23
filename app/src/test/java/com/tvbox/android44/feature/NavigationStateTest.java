@@ -177,7 +177,11 @@ public class NavigationStateTest {
         restartWithSources(new Dispatcher() {
             @Override public MockResponse dispatch(RecordedRequest request) {
                 String path = request.getRequestUrl().encodedPath();
-                if ("detail".equals(request.getRequestUrl().queryParameter("ac"))) pages.add(path);
+                // /api/ 是 setUp 默认源的残留请求，可能晚到，不参与断言
+                if (("/primary/".equals(path) || "/backup/".equals(path))
+                        && "detail".equals(request.getRequestUrl().queryParameter("ac"))) {
+                    pages.add(path);
+                }
                 if ("/primary/".equals(path) && primaryRecovered.get()) return homeMovies();
                 return new MockResponse().setResponseCode(503);
             }
