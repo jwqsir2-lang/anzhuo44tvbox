@@ -413,12 +413,9 @@ public class NavigationStateTest {
         assertNotNull(settings);
 
         assertTrue(settings.findViewById(R.id.settings_font).requestFocus());
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_iptv);
-        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_iptv_test);
-        direction(KeyEvent.KEYCODE_DPAD_LEFT, R.id.settings_iptv);
-        direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_font);
         direction(KeyEvent.KEYCODE_DPAD_UP, R.id.nav_settings);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_font);
+        // 上下换行统一落在行首：IPTV 行首就是地址入口
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_iptv);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_api);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_api_manage);
@@ -426,17 +423,33 @@ public class NavigationStateTest {
         direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_api_manage);
         direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_api_qr);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_provider);
-        direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_api_qr);
+        direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_api_manage);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_provider);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_key);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_qr);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_auto_line);
         direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_stats);
         direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_stats_clear);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_update_action);
-        direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_stats_clear);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_update_action);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_update_action);
+        // 最后一行的行首是开关，更新按钮在其右侧
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_check_toggle);
+        direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_auto_line);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_check_toggle);
+        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_update_action);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_check_toggle);
+    }
+
+    /** 直播源地址行必须能用遥控器选到，并左右进入「测试」按钮。 */
+    @Test @Config(sdk = {16, 19, 23, 28})
+    public void settingsIptvRowIsReachableByRemote() {
+        controller.get().selectTab(MainActivity.Tab.SETTINGS, true);
+        controller.get().getSupportFragmentManager().executePendingTransactions();
+        android.view.View settings = controller.get().getSupportFragmentManager()
+                .findFragmentByTag("SETTINGS").getView();
+        assertNotNull(settings);
+
+        assertTrue(settings.findViewById(R.id.settings_iptv).requestFocus());
+        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_iptv_test);
+        direction(KeyEvent.KEYCODE_DPAD_LEFT, R.id.settings_iptv);
     }
 
     private void direction(int code, int target) {

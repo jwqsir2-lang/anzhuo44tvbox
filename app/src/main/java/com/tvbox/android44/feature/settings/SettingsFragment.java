@@ -338,7 +338,11 @@ public class SettingsFragment extends Fragment {
                 if (vertical) {
                     int target = row + step;
                     if (target < 0) root.getRootView().findViewById(R.id.nav_settings).requestFocus();
-                    else if (target < REMOTE_ROWS.length) focusRemoteRow(root, target, column);
+                    else if (target < REMOTE_ROWS.length) {
+                        // 上下换行时以起始列收敛：目标行更窄就贴齐末尾，
+                        // 但不继承「上次在该行选过的列」，否则 font(列1) 会跳到 iptv_test。
+                        focusRemoteRow(root, target, column, true);
+                    }
                 } else {
                     for (int target = column + step; target >= 0 && target < buttons.length; target += step) {
                         if (requestRemoteFocus(root, buttons[target])) break;
@@ -351,9 +355,23 @@ public class SettingsFragment extends Fragment {
     }
 
     private void focusRemoteRow(View root, int row, int fromColumn) {
+        focusRemoteRow(root, row, fromColumn, false);
+    }
+
+    /**
+     * @param useFromColumn true：上下换行，按来源行的列号落点，不继承本行历史列；
+     *                      false：同行左右移动后回到本行，沿用本行记忆列。
+     */
+    private void focusRemoteRow(View root, int row, int fromColumn, boolean useFromColumn) {
         int[] buttons = REMOTE_ROWS[row];
-        int preferred = remoteColumns[row] >= 0 ? remoteColumns[row] : fromColumn;
-        if (requestRemoteFocus(root, buttons[Math.min(preferred, buttons.length - 1)])) return;
+        int preferred = (useFromColumn || remoteColumns[row] < 0)
+                ? fromColumn : remoteColumns[row];
+        int idx = Math.max(0, Math.min(preferred, buttons.length - 1));
+        // 上下换行时优先落在行首：地址、开关这类主入口都在第 0 列，
+        // 附属按钮（测试 / 二维码 / 清空）靠左右键进入。
+        if (useFromColumn) idx = 0;
+        remoteColumns[row] = idx;
+        if (requestRemoteFocus(root, buttons[idx])) return;
         for (int button : buttons) {
             if (requestRemoteFocus(root, button)) return;
         }
