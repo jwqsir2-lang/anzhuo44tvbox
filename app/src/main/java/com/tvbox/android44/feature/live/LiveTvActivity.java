@@ -774,7 +774,9 @@ public class LiveTvActivity extends com.tvbox.android44.common.BaseActivity impl
             h.row.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    pick.onChannelPicked(flatIndexOf(position));
+                    int pos = h.getAdapterPosition();
+                    if (pos == RecyclerView.NO_POSITION) return;
+                    pick.onChannelPicked(flatIndexOf(pos));
                 }
             });
         }
@@ -844,9 +846,11 @@ public class LiveTvActivity extends com.tvbox.android44.common.BaseActivity impl
             h.row.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    selected = idx;
+                    int pos = h.getAdapterPosition();
+                    if (pos == RecyclerView.NO_POSITION) return;
+                    selected = pos;
                     notifyDataSetChanged();
-                    pick.onGroupPicked(idx);
+                    pick.onGroupPicked(pos);
                 }
             });
         }
