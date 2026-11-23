@@ -47,6 +47,43 @@
                 android:layout_marginLeft="14dp" />
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/settings_extension_services"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ===== 直播设置 ===== -->
+            <TextView
+                style="@style/SettingsSectionHeader"
+                android:text="@string/live_settings" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/settings_iptv"
+                    style="@style/Widget.Tv.NavButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:gravity="left|center_vertical"
+                    android:maxLines="1" />
+
+                <TextView
+                    android:id="@+id/settings_iptv_test"
+                    style="@style/Widget.Tv.NavButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="14dp"
+                    android:text="@string/test_service" />
+            </LinearLayout>
+
+        </LinearLayout>
+
         <!-- ===== 视频源 ===== -->
         <TextView
             style="@style/SettingsSectionHeader"
@@ -203,66 +240,6 @@
             android:textSize="13sp"
             android:visibility="gone" />
 
-        <LinearLayout
-            android:id="@+id/settings_extension_services"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <!-- ===== 扩展服务（暂时隐藏）===== -->
-            <TextView
-                style="@style/SettingsSectionHeader"
-                android:text="@string/extension_services" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/settings_iptv"
-                    style="@style/Widget.Tv.NavButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:gravity="left|center_vertical"
-                    android:maxLines="1" />
-
-                <TextView
-                    android:id="@+id/settings_iptv_test"
-                    style="@style/Widget.Tv.NavButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="14dp"
-                    android:text="@string/test_service" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/settings_platform"
-                    style="@style/Widget.Tv.NavButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:gravity="left|center_vertical"
-                    android:maxLines="1" />
-
-                <TextView
-                    android:id="@+id/settings_platform_test"
-                    style="@style/Widget.Tv.NavButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="14dp"
-                    android:text="@string/test_service" />
-            </LinearLayout>
-        </LinearLayout>
+        >
     </LinearLayout>
 </ScrollView>

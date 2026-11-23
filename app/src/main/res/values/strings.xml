@@ -107,6 +107,7 @@
     <string name="line_stats">线路统计</string>
     <string name="clear_stats">清空统计</string>
     <string name="version_update">版本更新</string>
+    <string name="live_settings">直播设置</string>
     <string name="extension_services">扩展服务</string>
     <string name="test_service">测试</string>
     <string name="back_room">返回房间</string>
@@ -144,7 +145,7 @@
     <string name="enabled">开</string>
     <string name="disabled">关</string>
     <string name="startup_update_label">启动时检查更新：%1$s</string>
-    <string name="iptv_url_label">IPTV 地址：%1$s</string>
+    <string name="iptv_url_label">直播源地址：%1$s</string>
     <string name="platform_url_label">平台直播服务：%1$s</string>
     <string name="checking_update">检查中…</string>
     <string name="downloading_update">下载中…</string>

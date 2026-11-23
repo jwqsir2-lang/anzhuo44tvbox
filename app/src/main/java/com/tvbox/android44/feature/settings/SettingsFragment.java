@@ -85,7 +85,6 @@ public class SettingsFragment extends Fragment {
     private TextView otaStatus;
     private ProgressBar otaProgress;
     private TextView btnIptv;
-    private TextView btnPlatform;
 
     private ConfigHttpServer configServer;
     private AlertDialog qrDialog;
@@ -121,7 +120,6 @@ public class SettingsFragment extends Fragment {
         otaStatus = root.findViewById(R.id.settings_ota_status);
         otaProgress = root.findViewById(R.id.settings_ota_progress);
         btnIptv = root.findViewById(R.id.settings_iptv);
-        btnPlatform = root.findViewById(R.id.settings_platform);
 
         btnTheme.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -274,25 +272,6 @@ public class SettingsFragment extends Fragment {
                 testIptv();
             }
         });
-        btnPlatform.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                editUrl("平台直播服务地址", TvBoxApp.get().settings().platformLiveUrl(),
-                        new OnUrlSaved() {
-                            @Override
-                            public void onSaved(String url) {
-                                TvBoxApp.get().settings().setPlatformLiveUrl(url);
-                                refresh();
-                            }
-                        });
-            }
-        });
-        root.findViewById(R.id.settings_platform_test).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                testPlatform();
-            }
-        });
 
         versionView.setText(getString(R.string.current_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
         if (downloadedApk != null) {
@@ -403,7 +382,6 @@ public class SettingsFragment extends Fragment {
         btnAutoLine.setText(getString(R.string.auto_line_label, getString(s.autoLineSwitch() ? R.string.enabled : R.string.disabled)));
         btnCheckToggle.setText(getString(R.string.startup_update_label, getString(s.checkUpdateOnStart() ? R.string.enabled : R.string.disabled)));
         btnIptv.setText(getString(R.string.iptv_url_label, s.iptvUrl()));
-        btnPlatform.setText(getString(R.string.platform_url_label, s.platformLiveUrl()));
     }
 
     // ===== 内容过滤 / 密码 =====
@@ -960,24 +938,7 @@ public class SettingsFragment extends Fragment {
         });
     }
 
-    private void testPlatform() {
-        toast("正在测试平台直播服务…");
-        TvBoxApp.get().platformLive().sites(
-                new com.tvbox.android44.data.repository.PlatformLiveRepository.Callback<List<com.tvbox.android44.domain.model.PlatformLive.Site>>() {
-                    @Override
-                    public void onResult(Result<List<com.tvbox.android44.domain.model.PlatformLive.Site>> result) {
-                        if (!isAdded() || getView() == null) {
-                            return;
-                        }
-                        if (result.isSuccess() && result.data() != null) {
-                            toast("服务可用：" + result.data().size() + " 个平台");
-                        } else {
-                            toast("测试失败：" + (result.asFailure() != null
-                                    ? result.asFailure().userMessage : "未知错误"));
-                        }
-                    }
-                });
-    }
+
 
     // ===== 扫码配置（文档 09 §5） =====
 
