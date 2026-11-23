@@ -1,0 +1,130 @@
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+// Injection precedence: Gradle property, environment, local.properties, default.
+def localProps = new Properties()
+def localFile = rootProject.file('local.properties')
+if (localFile.exists()) {
+    localFile.withInputStream { localProps.load(it) }
+}
+def injectedProp = { String name, String defaultValue ->
+    if (project.hasProperty(name)) return project.property(name).toString()
+    if (System.getenv(name) != null) return System.getenv(name)
+    return localProps.getProperty(name, defaultValue)
+}
+
+android {
+    namespace 'com.tvbox.android44'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.tvbox.android44"
+        minSdk 16          // Android 4.1 / API 16 compatibility baseline
+        targetSdk 28       // 侧载版基线
+        versionCode injectedProp('TVBOX_VERSION_CODE', '8').toInteger()
+        versionName injectedProp('TVBOX_VERSION_NAME', '0.0.7')
+        multiDexEnabled true
+        vectorDrawables.useSupportLibrary = true
+
+        // 外部服务地址均为构建期注入的默认值，运行时可在设置中受控覆盖
+        buildConfigField "String", "PLATFORM_LIVE_URL", groovy.json.JsonOutput.toJson(injectedProp('TVBOX_PLATFORM_LIVE_SERVICE_URL', 'http://20.205.10.127:8868'))
+        buildConfigField "String", "OTA_MANIFEST_URL", groovy.json.JsonOutput.toJson(injectedProp('TVBOX_OTA_MANIFEST_URL', 'https://github.com/ZxxXinI/tvbox-android4/releases/latest/download/update.json'))
+        buildConfigField "String", "IPTV_SOURCE_URL", groovy.json.JsonOutput.toJson(injectedProp('TVBOX_IPTV_SOURCE_URL', 'http://20.205.10.127:8787/tvbox/result.txt'))
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    testOptions {
+        unitTests.includeAndroidResources = true
+        unitTests.all {
+            def testHome = layout.buildDirectory.dir('test-home').get().asFile
+            doFirst { testHome.mkdirs() }
+            systemProperty 'user.home', testHome.absolutePath
+            systemProperty 'robolectric.dependency.repo.url', 'https://repo.maven.apache.org/maven2'
+            // Test JVMs need the same trusted HTTPS route as Gradle in managed environments.
+            ['http.proxyHost', 'http.proxyPort', 'https.proxyHost', 'https.proxyPort',
+             'http.nonProxyHosts', 'javax.net.ssl.trustStore', 'javax.net.ssl.trustStorePassword'].each { name ->
+                if (System.getProperty(name) != null) systemProperty name, System.getProperty(name)
+            }
+            systemProperty 'http.nonProxyHosts', 'localhost|127.*|[::1]'
+        }
+    }
+
+    signingConfigs {
+        // 签名参数只从 local.properties / Gradle 属性注入，仓库不含口令
+        releaseSigning {
+            def storeFilePath = injectedProp('TVBOX_STORE_FILE', '')
+            if (storeFilePath != '') {
+                ['TVBOX_STORE_PASSWORD', 'TVBOX_KEY_ALIAS', 'TVBOX_KEY_PASSWORD'].each { name ->
+                    if (injectedProp(name, '').isEmpty()) throw new GradleException("缺少签名配置: ${name}")
+                }
+                storeFile rootProject.file(storeFilePath)
+                storePassword injectedProp('TVBOX_STORE_PASSWORD', '')
+                keyAlias injectedProp('TVBOX_KEY_ALIAS', '')
+                keyPassword injectedProp('TVBOX_KEY_PASSWORD', '')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            def storeFilePath = injectedProp('TVBOX_STORE_FILE', '')
+            if (storeFilePath != '') {
+                signingConfig signingConfigs.releaseSigning
+            } else {
+                if (injectedProp('TVBOX_REQUIRE_RELEASE_SIGNING', 'false').toBoolean()) {
+                    throw new GradleException('正式发布需要配置 TVBOX_STORE_FILE 及签名参数')
+                }
+                // 本机验证构建的回退方案；正式发布必须注入真实签名
+                signingConfig signingConfigs.debug
+            }
+        }
+    }
+
+    lint {
+        abortOnError true
+        checkReleaseBuilds false
+        // 侧载发行版（文档 02 §2）：targetSdk 28 是有意基线，不上架 Google Play，
+        // ExpiredTargetSdkVersion 的商店政策检查不适用；并非掩盖依赖不兼容。
+        disable 'ExpiredTargetSdkVersion'
+        // 单语（简体中文）横屏电视应用，不支持 RTL 布局：RTL 检查不适用
+        disable 'RtlHardcoded', 'RtlEnabled', 'RtlSymmetry'
+    }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+    }
+}
+
+dependencies {
+    implementation libs.androidx.appcompat
+    implementation libs.androidx.recyclerview
+    implementation libs.androidx.multidex
+    implementation libs.exoplayer.core
+    implementation libs.exoplayer.hls
+    implementation libs.exoplayer.ui
+    implementation libs.okhttp
+    implementation libs.gson
+    implementation libs.glide
+    implementation libs.zxing.core
+    annotationProcessor libs.glide.compiler
+
+    testImplementation libs.junit
+    // 4.10.x retains API 16 support; this dependency is test-only.
+    testImplementation libs.robolectric
+    testImplementation libs.mockwebserver
+    testImplementation libs.gson
+}

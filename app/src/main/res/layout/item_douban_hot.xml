@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 豆瓣热播横条卡片：竖版海报 + 标题 + 评分，点击按片名搜索当前源 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/poster_card"
+    android:layout_width="96dp"
+    android:layout_height="wrap_content"
+    android:layout_marginRight="8dp"
+    android:background="@drawable/bg_card"
+    android:orientation="vertical"
+    android:padding="3dp">
+
+    <com.tvbox.android44.common.ui.AspectImageView
+        android:id="@+id/poster_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/poster_desc"
+        android:scaleType="centerCrop"
+        android:src="@drawable/poster_placeholder" />
+
+    <TextView
+        android:id="@+id/poster_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="1"
+        android:textColor="@color/text_primary"
+        android:textSize="11sp" />
+
+    <TextView
+        android:id="@+id/poster_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="1"
+        android:textColor="@color/accent"
+        android:textSize="10sp" />
+</LinearLayout>
