@@ -13,7 +13,7 @@
         android:paddingTop="6dp"
         android:paddingBottom="6dp"
         android:textColor="@color/accent"
-        android:textSize="14sp"
+        android:textSize="20sp"
         android:textStyle="bold"
         android:visibility="gone" />
 
@@ -26,5 +26,5 @@
         android:ellipsize="end"
         android:gravity="left|center_vertical"
         android:maxLines="1"
-        android:textSize="15sp" />
+        android:textSize="21sp" />
 </FrameLayout>

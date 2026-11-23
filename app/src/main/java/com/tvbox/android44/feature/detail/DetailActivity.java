@@ -44,6 +44,13 @@ import java.util.List;
  */
 public class DetailActivity extends BaseActivity {
 
+    /** 节目介绍页排版按原始字号调校，不跟随应用字号放大。 */
+    @Override
+    protected void attachBaseContext(android.content.Context newBase) {
+        super.attachBaseContext(
+                com.tvbox.android44.common.FontScale.wrapImmutable(newBase));
+    }
+
     public static final String EXTRA_API_ID = "apiId";
     public static final String EXTRA_MOVIE_ID = "movieId";
 

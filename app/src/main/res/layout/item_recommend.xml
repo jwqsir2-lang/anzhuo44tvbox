@@ -16,7 +16,7 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:textColor="@color/text_primary"
-        android:textSize="17sp"
+        android:textSize="23sp"
         android:textStyle="bold" />
 
     <TextView
@@ -27,7 +27,7 @@
         android:ellipsize="end"
         android:maxLines="2"
         android:textColor="@color/text_secondary"
-        android:textSize="13sp" />
+        android:textSize="19sp" />
 
     <TextView
         android:id="@+id/recommend_item_hint"
@@ -36,5 +36,5 @@
         android:layout_marginTop="6dp"
         android:gravity="end"
         android:textColor="@color/accent_dim"
-        android:textSize="12sp" />
+        android:textSize="18sp" />
 </LinearLayout>

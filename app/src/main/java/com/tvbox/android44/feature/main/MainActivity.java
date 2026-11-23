@@ -65,6 +65,7 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
 
         bindNav(R.id.nav_douban, Tab.DOUBAN);
+        bindNav(R.id.nav_live_tv, Tab.LIVE_TV);
         bindNav(R.id.nav_history, Tab.HISTORY);
         bindNav(R.id.nav_home, Tab.HOME);
         bindNav(R.id.nav_favorite, Tab.FAVORITE);
@@ -149,8 +150,13 @@ public class MainActivity extends BaseActivity {
     }
 
     public void selectTab(Tab tab, boolean fromUser) {
-        if (tab == Tab.LIVE_TV || tab == Tab.PLATFORM_LIVE) {
-            // 直播功能暂时隐藏，防止恢复状态、数字键或其他调用绕过界面入口。
+        if (tab == Tab.LIVE_TV) {
+            // 电视直播是独立 Activity（自带播放器与频道列表），不占主界面 fragment。
+            startActivity(new android.content.Intent(this,
+                    com.tvbox.android44.feature.live.LiveTvActivity.class));
+            return;
+        }
+        if (tab == Tab.PLATFORM_LIVE) {
             selectTab(Tab.HOME, false);
             return;
         }
@@ -215,7 +221,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void updateNavHighlight(Tab tab) {
-        int[] ids = {R.id.nav_douban, R.id.nav_history, R.id.nav_home,
+        int[] ids = {R.id.nav_douban, R.id.nav_live_tv, R.id.nav_history, R.id.nav_home,
                 R.id.nav_favorite, R.id.nav_search, R.id.nav_settings};
         for (int id : ids) {
             TextView tv = findViewById(id);

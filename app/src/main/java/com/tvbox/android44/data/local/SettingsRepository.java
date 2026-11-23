@@ -41,6 +41,8 @@ public class SettingsRepository {
 
     public static final String THEME_DEFAULT = "default";
     public static final String THEME_CINEMA = "cinema";
+    /** 字号三档：小 / 中 / 大。FONT_XLARGE 为旧值，仅用于读取老配置迁移。 */
+    public static final String FONT_SMALL = "small";
     public static final String FONT_NORMAL = "normal";
     public static final String FONT_LARGE = "large";
     public static final String FONT_XLARGE = "xlarge";
@@ -180,18 +182,42 @@ public class SettingsRepository {
                 .apply();
     }
 
+    /** 当前字号档位：小 / 中 / 大。读取时把旧的 xlarge 折算成 large。 */
     public String fontScale() {
         String f = prefs.getString(KEY_FONT, FONT_NORMAL);
+        if (FONT_SMALL.equals(f)) {
+            return FONT_SMALL;
+        }
         if (FONT_LARGE.equals(f) || FONT_XLARGE.equals(f)) {
-            return f;
+            return FONT_LARGE;
         }
         return FONT_NORMAL;
     }
 
     public void setFontScale(String font) {
-        String f = FONT_LARGE.equals(font) ? FONT_LARGE
-                : (FONT_XLARGE.equals(font) ? FONT_XLARGE : FONT_NORMAL);
+        String f = FONT_SMALL.equals(font) ? FONT_SMALL
+                : (FONT_LARGE.equals(font) ? FONT_LARGE : FONT_NORMAL);
         prefs.edit().putString(KEY_FONT, f).apply();
+    }
+
+    /** 三档下标 -> 档位值，供设置页与测试复用。 */
+    public static final String[] FONT_PRESETS = {FONT_SMALL, FONT_NORMAL, FONT_LARGE};
+    public static final String[] FONT_LABELS = {"小", "中", "大"};
+
+    public static int fontPresetIndex(String font) {
+        String f = prefs0(font);
+        for (int i = 0; i < FONT_PRESETS.length; i++) {
+            if (FONT_PRESETS[i].equals(f)) {
+                return i;
+            }
+        }
+        return 1;
+    }
+
+    private static String prefs0(String font) {
+        if (FONT_SMALL.equals(font)) return FONT_SMALL;
+        if (FONT_LARGE.equals(font) || FONT_XLARGE.equals(font)) return FONT_LARGE;
+        return FONT_NORMAL;
     }
 
     // ===== 内容过滤开关 =====

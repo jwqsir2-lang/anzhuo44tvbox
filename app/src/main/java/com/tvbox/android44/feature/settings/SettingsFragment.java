@@ -60,6 +60,7 @@ public class SettingsFragment extends Fragment {
     private static final String STATE_REMOTE_COLUMNS = "remote_columns";
     private static final int[][] REMOTE_ROWS = {
             {R.id.settings_theme, R.id.settings_font, R.id.settings_filter},
+            {R.id.settings_iptv, R.id.settings_iptv_test},
             {R.id.settings_api},
             {R.id.settings_api_manage, R.id.settings_api_qr},
             {R.id.settings_ai_provider},
@@ -68,7 +69,7 @@ public class SettingsFragment extends Fragment {
             {R.id.settings_auto_line, R.id.settings_stats, R.id.settings_stats_clear},
             {R.id.settings_check_toggle, R.id.settings_update_action}
     };
-    private int[] remoteColumns = {-1, -1, -1, -1, -1, -1, -1, -1};
+    private int[] remoteColumns = new int[REMOTE_ROWS.length];
 
     private TextView btnTheme;
     private TextView btnFont;
@@ -103,7 +104,10 @@ public class SettingsFragment extends Fragment {
         final int generation = ++viewGeneration;
         int[] savedColumns = savedInstanceState == null ? null : savedInstanceState.getIntArray(STATE_REMOTE_COLUMNS);
         if (savedColumns != null && savedColumns.length == REMOTE_ROWS.length) remoteColumns = savedColumns.clone();
-        View root = inflater.inflate(R.layout.fragment_settings, container, false);
+        // 设置页排版按原始字号调校，用固定 1.0 的 inflater 渲染，不跟随应用字号。
+        LayoutInflater fixed = inflater.cloneInContext(
+                com.tvbox.android44.common.FontScale.withScale(requireContext(), 1.0f));
+        View root = fixed.inflate(R.layout.fragment_settings, container, false);
         btnTheme = root.findViewById(R.id.settings_theme);
         btnFont = root.findViewById(R.id.settings_font);
         btnApi = root.findViewById(R.id.settings_api);
@@ -370,9 +374,8 @@ public class SettingsFragment extends Fragment {
         SettingsRepository s = TvBoxApp.get().settings();
         btnTheme.setText(getString(R.string.theme_label, getString(SettingsRepository.THEME_CINEMA.equals(s.theme())
                 ? R.string.theme_cinema : R.string.theme_default)));
-        String font = s.fontScale();
-        btnFont.setText(getString(R.string.font_label, getString(SettingsRepository.FONT_LARGE.equals(font) ? R.string.font_large
-                : (SettingsRepository.FONT_XLARGE.equals(font) ? R.string.font_xlarge : R.string.font_normal))));
+        btnFont.setText(getString(R.string.font_label,
+                SettingsRepository.FONT_LABELS[SettingsRepository.fontPresetIndex(s.fontScale())]));
         btnFilterView.setText(getString(R.string.filter_label, getString(s.contentFilterEnabled()
                 ? R.string.enabled : R.string.disabled)));
         btnApi.setText(getString(R.string.current_source_label, s.currentApi().name));
@@ -447,15 +450,15 @@ public class SettingsFragment extends Fragment {
     }
 
     private void pickFont() {
-        final String[] values = {SettingsRepository.FONT_NORMAL, SettingsRepository.FONT_LARGE,
-                SettingsRepository.FONT_XLARGE};
+        final String[] values = SettingsRepository.FONT_PRESETS;
         String current = TvBoxApp.get().settings().fontScale();
-        int checked = SettingsRepository.FONT_LARGE.equals(current) ? 1
-                : (SettingsRepository.FONT_XLARGE.equals(current) ? 2 : 0);
-        TvDialogs.singleChoice(getActivity(), "字体", listOf("正常", "大", "超大"), checked,
+        int checked = SettingsRepository.fontPresetIndex(current);
+        TvDialogs.singleChoice(getActivity(), "字体大小",
+                listOf(SettingsRepository.FONT_LABELS), checked,
                 new TvDialogs.ChoiceListener() {
                     @Override
                     public void onChoice(int index) {
+                        if (index < 0 || index >= values.length) return;
                         TvBoxApp.get().settings().setFontScale(values[index]);
                         recreateActivity();
                     }

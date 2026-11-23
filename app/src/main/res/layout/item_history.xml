@@ -32,7 +32,7 @@
         android:gravity="center"
         android:maxLines="1"
         android:textColor="@color/text_primary"
-        android:textSize="13sp" />
+        android:textSize="19sp" />
 
     <TextView
         android:id="@+id/history_episode"
@@ -42,5 +42,5 @@
         android:gravity="center"
         android:maxLines="1"
         android:textColor="@color/text_secondary"
-        android:textSize="11sp" />
+        android:textSize="17sp" />
 </LinearLayout>

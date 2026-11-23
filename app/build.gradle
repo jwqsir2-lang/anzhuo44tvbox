@@ -30,7 +30,7 @@ android {
         // 外部服务地址均为构建期注入的默认值，运行时可在设置中受控覆盖
         buildConfigField "String", "PLATFORM_LIVE_URL", groovy.json.JsonOutput.toJson(injectedProp('TVBOX_PLATFORM_LIVE_SERVICE_URL', 'http://20.205.10.127:8868'))
         buildConfigField "String", "OTA_MANIFEST_URL", groovy.json.JsonOutput.toJson(injectedProp('TVBOX_OTA_MANIFEST_URL', 'https://github.com/ZxxXinI/tvbox-android4/releases/latest/download/update.json'))
-        buildConfigField "String", "IPTV_SOURCE_URL", groovy.json.JsonOutput.toJson(injectedProp('TVBOX_IPTV_SOURCE_URL', 'http://20.205.10.127:8787/tvbox/result.txt'))
+        buildConfigField "String", "IPTV_SOURCE_URL", groovy.json.JsonOutput.toJson(injectedProp('TVBOX_IPTV_SOURCE_URL', 'https://dl.kstore.dev/download/10824/live.txt'))
     }
 
     compileOptions {

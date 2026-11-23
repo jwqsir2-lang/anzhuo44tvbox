@@ -34,13 +34,13 @@ public class LegacyApiTest {
     @Test public void fontWrapperScalesInflatedViewsWithoutMutatingApplicationResources() {
         Context base = RuntimeEnvironment.getApplication();
         float before = base.getResources().getConfiguration().fontScale;
-        Context scaled = FontScale.withScale(base, FontScale.SCALE_XLARGE);
+        Context scaled = FontScale.withScale(base, FontScale.SCALE_LARGE);
         scaled.setTheme(R.style.Theme_TvBox);
         TextView label = (TextView) LayoutInflater.from(scaled).inflate(R.layout.item_episode, null);
-        assertEquals(FontScale.SCALE_XLARGE, scaled.getResources().getConfiguration().fontScale, 0.001f);
+        assertEquals(FontScale.SCALE_LARGE, scaled.getResources().getConfiguration().fontScale, 0.001f);
         assertEquals(before, base.getResources().getConfiguration().fontScale, 0.001f);
         // TextView resolves its XML textSize through a rounded pixel dimension.
-        assertEquals(Math.round(13 * scaled.getResources().getDisplayMetrics().density * FontScale.SCALE_XLARGE),
+        assertEquals(Math.round(19 * scaled.getResources().getDisplayMetrics().density * FontScale.SCALE_LARGE),
                 label.getTextSize(), 0.1f);
     }
 

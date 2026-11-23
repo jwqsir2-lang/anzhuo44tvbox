@@ -253,13 +253,14 @@ public class HomeFragment extends Fragment implements PageFocusState.Owner, Hist
                 });
     }
 
+    /** 字号越大列数越少，保证片名不被截断。 */
     private int columnsForScale() {
         String f = TvBoxApp.get().settings().fontScale();
-        if (SettingsRepository.FONT_XLARGE.equals(f)) {
-            return AppConstants.GRID_COLUMNS_XLARGE;
-        }
         if (SettingsRepository.FONT_LARGE.equals(f)) {
             return AppConstants.GRID_COLUMNS_LARGE;
+        }
+        if (SettingsRepository.FONT_SMALL.equals(f)) {
+            return AppConstants.GRID_COLUMNS_XLARGE;
         }
         return AppConstants.GRID_COLUMNS_NORMAL;
     }

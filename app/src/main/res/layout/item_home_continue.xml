@@ -31,7 +31,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/text_primary"
-            android:textSize="13sp" />
+            android:textSize="19sp" />
 
         <TextView
             android:id="@id/poster_subtitle"
@@ -40,6 +40,6 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/text_secondary"
-            android:textSize="11sp" />
+            android:textSize="17sp" />
     </LinearLayout>
 </LinearLayout>

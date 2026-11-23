@@ -128,11 +128,12 @@
     <string name="current_version">当前版本：v%1$s（内部版本 %2$d）</string>
     <string name="theme_label">主题：%1$s</string>
     <string name="theme_default">默认</string>
-    <string name="font_label">字体：%1$s</string>
+    <string name="font_label">字体大小：%1$s</string>
     <string name="filter_label">内容过滤：%1$s</string>
+    <string name="font_small">小</string>
     <string name="font_large">大</string>
     <string name="font_xlarge">超大</string>
-    <string name="font_normal">正常</string>
+    <string name="font_normal">中</string>
     <string name="current_source_label">当前视频源：%1$s</string>
     <string name="ai_provider_label">AI 提供方：%1$s</string>
     <string name="not_selected">未选择</string>

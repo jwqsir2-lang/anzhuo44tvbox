@@ -30,7 +30,7 @@
             android:paddingBottom="10dp"
             android:textColor="@color/text_primary"
             android:textColorHint="@color/text_secondary"
-            android:textSize="16sp" />
+            android:textSize="22sp" />
 
         <TextView
             android:id="@+id/search_button"
@@ -56,7 +56,7 @@
         android:layout_marginTop="6dp"
         android:layout_marginBottom="6dp"
         android:textColor="@color/text_secondary"
-        android:textSize="12sp"
+        android:textSize="18sp"
         android:visibility="gone" />
 
     <com.tvbox.android44.common.StateLayout

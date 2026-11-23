@@ -33,7 +33,7 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/theme_cinema"
                 android:textColor="@color/accent"
-                android:textSize="13sp"
+                android:textSize="19sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -100,7 +100,7 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="4dp"
                 android:textColor="@color/text_secondary"
-                android:textSize="12sp"
+                android:textSize="18sp"
                 android:visibility="gone" />
 
             <androidx.recyclerview.widget.RecyclerView

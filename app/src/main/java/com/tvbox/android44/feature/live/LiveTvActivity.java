@@ -52,7 +52,7 @@ import java.util.Set;
  * 故障恢复：错误/结束/连续或频繁或累计缓冲/4 秒无进度 → 换本频道下一条未尝试线路；
  * 全部线路失败后停止自动循环；手动重试清空尝试集合。
  */
-public class LiveTvActivity extends AppCompatActivity implements Player.Listener {
+public class LiveTvActivity extends com.tvbox.android44.common.BaseActivity implements Player.Listener {
 
     private static final int MSG_HIDE_HINT = 1;
     private static final int MSG_POSITION_POLL = 2;
