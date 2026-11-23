@@ -166,6 +166,10 @@ public class NavigationStateTest {
         }, "primary", "backup");
 
         MainActivity activity = controller.get();
+        // HOME 在默认页 DOUBAN 之后才 add，视图要等下一轮事务才存在；
+        // 这里先把事务推完，再等重试按钮出现。
+        activity.getSupportFragmentManager().executePendingTransactions();
+        Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
         await(() -> {
             View r = activity.findViewById(R.id.state_retry);
             return r != null && r.getVisibility() == View.VISIBLE;
