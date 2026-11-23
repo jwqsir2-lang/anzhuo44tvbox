@@ -91,6 +91,7 @@
     <string name="nav_settings_vertical">设\n置</string>
     <string name="play">播放</string>
     <string name="detail">详情</string>
+    <string name="live_bar_hint">上键选台 · 左右换台 · 确认播放</string>
     <string name="channel_list_hint">频道列表（确认键关闭）</string>
     <string name="room_cover_desc">房间封面</string>
     <string name="continue_playback">继续播放</string>

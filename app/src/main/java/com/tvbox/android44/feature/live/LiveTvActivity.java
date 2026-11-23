@@ -16,7 +16,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -64,10 +63,15 @@ public class LiveTvActivity extends com.tvbox.android44.common.BaseActivity impl
     private TextView digitView;
     private View channelPanel;
     private RecyclerView channelList;
+    private TextView nowView;
 
     private List<LiveChannelGroup> groups = new ArrayList<LiveChannelGroup>();
     private final List<LiveChannel> flatChannels = new ArrayList<LiveChannel>();
+    /** 当前选中的分组下标（面板左侧）。 */
+    private int groupIndex = 0;
     private ChannelAdapter adapter;
+    private GroupAdapter groupAdapter;
+    private RecyclerView groupList;
 
     private int channelIndex = -1;
     private int lineIndex = 0;
@@ -110,11 +114,33 @@ public class LiveTvActivity extends com.tvbox.android44.common.BaseActivity impl
         pv.setUseController(false);
         pv.requestFocus();
 
-        channelList.setLayoutManager(new LinearLayoutManager(this));
+        nowView = findViewById(R.id.live_now);
+        groupList = findViewById(R.id.live_group_list);
+
+        groupList.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+        groupAdapter = new GroupAdapter(new GroupAdapter.OnGroupPick() {
+            @Override
+            public void onGroupPicked(int index) {
+                groupIndex = index;
+                adapter.setGroup(index);
+                if (adapter.getItemCount() > 0) {
+                    channelList.scrollToPosition(0);
+                    channelList.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            focusFirstChannel();
+                        }
+                    });
+                }
+            }
+        });
+        groupList.setAdapter(groupAdapter);
+
+        channelList.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
         adapter = new ChannelAdapter(new ChannelAdapter.OnChannelPick() {
             @Override
             public void onChannelPicked(int flatIndex) {
-                toggleChannelList(false);
+                closePanel();
                 manualSwitchChannel(flatIndex);
             }
         });
@@ -127,10 +153,12 @@ public class LiveTvActivity extends com.tvbox.android44.common.BaseActivity impl
             }
         });
 
+        // 触摸设备：点画面弹出/收起频道面板
         findViewById(R.id.live_root).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleChannelList(channelPanel.getVisibility() != View.VISIBLE);
+                if (panelVisible()) closePanel();
+                else openPanel();
             }
         });
 
@@ -173,7 +201,21 @@ public class LiveTvActivity extends com.tvbox.android44.common.BaseActivity impl
             Toast.makeText(this, "直播源没有可播放频道", Toast.LENGTH_LONG).show();
             return;
         }
-        adapter.setChannels(flatChannels);
+        groupAdapter.setGroups(groups);
+        // 定位到上次播放频道所在分组
+        int startGroup = 0;
+        if (channelIndex >= 0 && channelIndex < flatChannels.size()) {
+            String g = flatChannels.get(channelIndex).groupName;
+            for (int i = 0; i < groups.size(); i++) {
+                if (groups.get(i).name.equals(g)) { startGroup = i; break; }
+            }
+        }
+        groupIndex = startGroup;
+        groupAdapter.setSelected(startGroup);
+        java.util.List<String> names = new ArrayList<String>();
+        for (LiveChannelGroup g : groups) names.add(g.name);
+        adapter.setGroupNames(names);
+        adapter.setGroup(startGroup);
         // 初次进入：上次频道（按分组+名称记忆）或第一个频道
         int start = 0;
         SharedPreferences prefs = getPreferences(MODE_PRIVATE);
@@ -239,6 +281,11 @@ public class LiveTvActivity extends com.tvbox.android44.common.BaseActivity impl
         showHint(channel.number + " " + channel.name + " · 线路"
                 + (lineIndex + 1) + "/" + channel.lines.size()
                 + (channel.lines.size() > 1 ? "（上/下键换线）" : ""));
+        if (nowView != null) {
+            nowView.setText(channel.number + "  " + channel.name
+                    + (channel.lines.size() > 1
+                        ? "    线路 " + (lineIndex + 1) + "/" + channel.lines.size() : ""));
+        }
         handler.removeMessages(MSG_POSITION_POLL);
         handler.sendEmptyMessage(MSG_POSITION_POLL);
     }
@@ -255,6 +302,11 @@ public class LiveTvActivity extends com.tvbox.android44.common.BaseActivity impl
     /** 手动切台：重置当前频道的自动恢复计数。 */
     private void manualSwitchChannel(int idx) {
         playChannel(idx, 0, false);
+        if (adapter != null) {
+            adapter.setPlaying(idx);
+            adapter.notifyDataSetChanged();
+            channelList.scrollToPosition(idx);
+        }
     }
 
     private void switchChannel(int delta) {
@@ -306,25 +358,97 @@ public class LiveTvActivity extends com.tvbox.android44.common.BaseActivity impl
         }
     }
 
-    private void toggleChannelList(boolean show) {
-        channelPanel.setVisibility(show ? View.VISIBLE : View.GONE);
-        if (show) {
-            adapter.notifyDataSetChanged();
-            // 焦点落在当前频道
-            channelList.scrollToPosition(channelIndex);
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    RecyclerView.ViewHolder vh =
-                            channelList.findViewHolderForAdapterPosition(channelIndex);
-                    if (vh != null) {
-                        vh.itemView.requestFocus();
-                    }
-                }
-            }, 100);
-        } else {
-            findViewById(R.id.live_player_view).requestFocus();
+    /**
+     * 打开 TVBox 式频道面板：覆盖在画面上，左侧分类、右侧频道。
+     * 焦点落在左侧当前分组，按右键进入频道列表。
+     */
+    private void openPanel() {
+        if (flatChannels.isEmpty()) {
+            return;
         }
+        channelPanel.setVisibility(View.VISIBLE);
+        channelPanel.bringToFront();
+        if (nowView != null && channelIndex >= 0 && channelIndex < flatChannels.size()) {
+            LiveChannel c = flatChannels.get(channelIndex);
+            nowView.setText(c.number + "  " + c.name);
+        }
+        groupAdapter.setSelected(groupIndex);
+        adapter.setGroup(groupIndex);
+        groupList.scrollToPosition(groupIndex);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                RecyclerView.ViewHolder vh =
+                        groupList.findViewHolderForAdapterPosition(groupIndex);
+                if (vh != null) {
+                    vh.itemView.requestFocus();
+                } else if (groupList.getChildCount() > 0) {
+                    groupList.getChildAt(0).requestFocus();
+                }
+            }
+        }, 80);
+    }
+
+    /** 收起面板，回到全屏。 */
+    private void closePanel() {
+        channelPanel.setVisibility(View.GONE);
+        findViewById(R.id.live_player_view).requestFocus();
+    }
+
+    private boolean panelVisible() {
+        return channelPanel.getVisibility() == View.VISIBLE;
+    }
+
+    /** 焦点是否在面板内。 */
+    private boolean isInGroupList() {
+        View f = getCurrentFocus();
+        return f != null && isDescendantOf(groupList, f);
+    }
+
+    private boolean isInChannelList() {
+        View f = getCurrentFocus();
+        return f != null && isDescendantOf(channelList, f);
+    }
+
+    private boolean inPanel() {
+        View f = getCurrentFocus();
+        return f != null && isDescendantOf(channelPanel, f);
+    }
+
+    /** 把焦点送到当前分组里的当前频道。 */
+    private void focusCurrentChannel() {
+        int pos = adapter.indexOfPlaying();
+        if (pos < 0) pos = 0;
+        channelList.scrollToPosition(pos);
+        final int target = pos;
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                RecyclerView.ViewHolder vh =
+                        channelList.findViewHolderForAdapterPosition(target);
+                if (vh != null) {
+                    vh.itemView.requestFocus();
+                } else if (channelList.getChildCount() > 0) {
+                    channelList.getChildAt(0).requestFocus();
+                }
+            }
+        }, 80);
+    }
+
+    private void focusFirstChannel() {
+        if (channelList.getChildCount() > 0) {
+            channelList.getChildAt(0).requestFocus();
+        }
+    }
+
+    private static boolean isDescendantOf(View parent, View child) {
+        View cur = child;
+        while (cur != null) {
+            if (cur == parent) return true;
+            android.view.ViewParent vp = cur.getParent();
+            cur = vp instanceof View ? (View) vp : null;
+        }
+        return false;
     }
 
     // ===== 播放器事件与故障恢复 =====
@@ -419,38 +543,49 @@ public class LiveTvActivity extends com.tvbox.android44.common.BaseActivity impl
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            boolean in = inPanel();
             switch (event.getKeyCode()) {
                 case KeyEvent.KEYCODE_DPAD_LEFT:
-                    if (channelPanel.getVisibility() == View.VISIBLE) {
+                    if (in) {
+                        if (isInChannelList()) {
+                            groupList.requestFocus();
+                            return true;
+                        }
                         return super.dispatchKeyEvent(event);
                     }
                     switchChannel(-1);
                     return true;
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
-                    if (channelPanel.getVisibility() == View.VISIBLE) {
+                    if (in) {
+                        // 在左栏（分类）按右键进入右栏频道列表
+                        if (isInGroupList()) {
+                            focusCurrentChannel();
+                            return true;
+                        }
                         return super.dispatchKeyEvent(event);
                     }
                     switchChannel(1);
                     return true;
                 case KeyEvent.KEYCODE_DPAD_UP:
-                    if (channelPanel.getVisibility() == View.VISIBLE) {
-                        return super.dispatchKeyEvent(event);
-                    }
+                    if (in) return super.dispatchKeyEvent(event);
                     switchLine(-1);
                     return true;
                 case KeyEvent.KEYCODE_DPAD_DOWN:
-                    if (channelPanel.getVisibility() == View.VISIBLE) {
-                        return super.dispatchKeyEvent(event);
-                    }
+                    if (in) return super.dispatchKeyEvent(event);
                     switchLine(1);
                     return true;
                 case KeyEvent.KEYCODE_DPAD_CENTER:
                 case KeyEvent.KEYCODE_ENTER:
                 case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-                    toggleChannelList(channelPanel.getVisibility() != View.VISIBLE);
+                    if (in) return super.dispatchKeyEvent(event);
+                    openPanel();
                     return true;
                 case KeyEvent.KEYCODE_MENU:
-                    // 手动重试：清空尝试集合并强制刷新源
+                    if (in) {
+                        closePanel();
+                        return true;
+                    }
+                    // 面板关着时：清空尝试集合并强制刷新源
                     failedLinesThisSession.clear();
                     loadChannels(true);
                     return true;
@@ -459,15 +594,15 @@ public class LiveTvActivity extends com.tvbox.android44.common.BaseActivity impl
                         commitDigits();
                         return true;
                     }
-                    if (channelPanel.getVisibility() == View.VISIBLE) {
-                        toggleChannelList(false);
+                    if (in) {
+                        closePanel();
                         return true;
                     }
                     finish();
                     return true;
                 default:
                     int digit = digitFromKey(event.getKeyCode());
-                    if (digit >= 0 && channelPanel.getVisibility() != View.VISIBLE) {
+                    if (digit >= 0 && !in) {
                         appendDigit(digit);
                         return true;
                     }
@@ -542,93 +677,189 @@ public class LiveTvActivity extends com.tvbox.android44.common.BaseActivity impl
 
     // ===== 频道列表适配器（分组头 + 频道行） =====
 
-    static final class ChannelAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-        private static final int TYPE_HEADER = 0;
-        private static final int TYPE_CHANNEL = 1;
+    /** 频道列表：按当前选中的分组过滤，选中项高亮。 */
+    static final class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.Holder> {
 
         interface OnChannelPick {
+            /** 传回频道在 flatChannels 里的绝对下标。 */
             void onChannelPicked(int flatIndex);
         }
 
-        private final List<LiveChannel> channels = new ArrayList<LiveChannel>();
-        private final OnChannelPick pick;
+        /** 全量频道（与 Activity 的 flatChannels 同一顺序）。 */
+        private final List<LiveChannel> all = new ArrayList<LiveChannel>();
+        /** 当前分组下的频道，与显示下标一一对应。 */
+        private final List<LiveChannel> shown = new ArrayList<LiveChannel>();
+        private int groupIndex = 0;
         private int playingFlatIndex = -1;
+        private final OnChannelPick pick;
 
         ChannelAdapter(OnChannelPick pick) {
             this.pick = pick;
         }
 
         void setChannels(List<LiveChannel> list) {
-            channels.clear();
-            channels.addAll(list);
-            notifyDataSetChanged();
+            all.clear();
+            all.addAll(list);
+            rebuild();
+        }
+
+        void setGroup(int index) {
+            groupIndex = index;
+            rebuild();
         }
 
         void setPlaying(int flatIndex) {
             this.playingFlatIndex = flatIndex;
+            notifyDataSetChanged();
+        }
+
+        /** 当前分组里选中频道的显示下标，找不到返回 -1。 */
+        int indexOfPlaying() {
+            for (int i = 0; i < shown.size(); i++) {
+                if (flatIndexOf(i) == playingFlatIndex) return i;
+            }
+            return -1;
+        }
+
+        private int flatIndexOf(int shownPos) {
+            return all.indexOf(shown.get(shownPos));
+        }
+
+        private void rebuild() {
+            shown.clear();
+            for (int i = 0; i < all.size(); i++) {
+                String g = groupNameOf(i);
+                if (g != null && g.equals(currentGroupName())) {
+                    shown.add(all.get(i));
+                }
+            }
+            notifyDataSetChanged();
+        }
+
+        private String currentGroupName() {
+            if (groupIndex < 0 || groupIndex >= groupNames.size()) {
+                return null;
+            }
+            return groupNames.get(groupIndex);
+        }
+
+        private final List<String> groupNames = new ArrayList<String>();
+
+        /** 由 Activity 在 setChannels 时同步分组名，供过滤使用。 */
+        void setGroupNames(List<String> names) {
+            groupNames.clear();
+            groupNames.addAll(names);
+            rebuild();
+        }
+
+        private String groupNameOf(int flatPos) {
+            return all.get(flatPos).groupName;
         }
 
         @NonNull
         @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_channel, parent, false);
-            if (viewType == TYPE_HEADER) {
-                return new HeaderHolder(v);
-            }
             FocusScaler.attach(v);
-            return new ChannelHolder(v);
+            return new Holder(v);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder h, int position) {
-            LiveChannel c = channels.get(position);
-            if (h instanceof HeaderHolder) {
-                ((HeaderHolder) h).group.setText(c.groupName);
-                ((HeaderHolder) h).group.setVisibility(View.VISIBLE);
-                ((ChannelHolder) h).row.setVisibility(View.GONE);
-            } else {
-                ((ChannelHolder) h).row.setVisibility(View.VISIBLE);
-                ((HeaderHolder) h).group.setVisibility(View.GONE);
-                ((ChannelHolder) h).row.setText(c.number + "  " + c.name);
-                ((ChannelHolder) h).row.setSelected(position == playingFlatIndex);
-                final int idx = position;
-                ((ChannelHolder) h).row.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        pick.onChannelPicked(idx);
-                    }
-                });
-            }
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            LiveChannel c = channels.get(position);
-            boolean firstOfGroup = position == 0
-                    || !channels.get(position - 1).groupName.equals(c.groupName);
-            return firstOfGroup ? TYPE_HEADER : TYPE_CHANNEL;
+        public void onBindViewHolder(@NonNull Holder h, int position) {
+            final LiveChannel c = shown.get(position);
+            h.row.setVisibility(View.VISIBLE);
+            h.row.setText(c.number + "  " + c.name);
+            h.row.setSelected(flatIndexOf(position) == playingFlatIndex);
+            h.row.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    pick.onChannelPicked(flatIndexOf(position));
+                }
+            });
         }
 
         @Override
         public int getItemCount() {
-            return channels.size();
+            return shown.size();
         }
 
-        static final class HeaderHolder extends RecyclerView.ViewHolder {
-            final TextView group;
-
-            HeaderHolder(View itemView) {
-                super(itemView);
-                group = itemView.findViewById(R.id.channel_group);
-            }
-        }
-
-        static final class ChannelHolder extends RecyclerView.ViewHolder {
+        static final class Holder extends RecyclerView.ViewHolder {
             final TextView row;
 
-            ChannelHolder(View itemView) {
+            Holder(View itemView) {
+                super(itemView);
+                row = itemView.findViewById(R.id.channel_row);
+            }
+        }
+    }
+
+    /** 左侧分类列表。 */
+    static final class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.Holder> {
+
+        interface OnGroupPick {
+            void onGroupPicked(int index);
+        }
+
+        private final List<String> names = new ArrayList<String>();
+        private int selected = 0;
+        private final OnGroupPick pick;
+
+        GroupAdapter(OnGroupPick pick) {
+            this.pick = pick;
+        }
+
+        void setGroups(List<LiveChannelGroup> groups) {
+            names.clear();
+            for (LiveChannelGroup g : groups) {
+                names.add(g.name);
+            }
+            notifyDataSetChanged();
+        }
+
+        void setSelected(int index) {
+            selected = index;
+            notifyDataSetChanged();
+        }
+
+        List<String> names() {
+            return names;
+        }
+
+        @NonNull
+        @Override
+        public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_channel, parent, false);
+            FocusScaler.attach(v);
+            return new Holder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull Holder h, int position) {
+            final int idx = position;
+            h.row.setVisibility(View.VISIBLE);
+            h.row.setText(names.get(position));
+            h.row.setSelected(position == selected);
+            h.row.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    selected = idx;
+                    notifyDataSetChanged();
+                    pick.onGroupPicked(idx);
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return names.size();
+        }
+
+        static final class Holder extends RecyclerView.ViewHolder {
+            final TextView row;
+
+            Holder(View itemView) {
                 super(itemView);
                 row = itemView.findViewById(R.id.channel_row);
             }

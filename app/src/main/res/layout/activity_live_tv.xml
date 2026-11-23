@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:background="@android:color/black">
 
+    <!-- 全屏画面（默认状态） -->
     <com.google.android.exoplayer2.ui.PlayerView
         android:id="@+id/live_player_view"
         android:layout_width="match_parent"
@@ -19,67 +20,91 @@
         android:indeterminate="true"
         android:visibility="gone" />
 
-    <!-- 顶部频道信息提示（临时） -->
+    <!-- 频道名浮层：切台时短暂显示，自动消失 -->
     <TextView
         android:id="@+id/live_hint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|center_horizontal"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="22dp"
         android:background="@color/scrim"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
         android:textColor="@color/text_primary"
-        android:textSize="16sp"
+        android:textSize="28sp"
+        android:textStyle="bold"
         android:visibility="gone" />
 
-    <!-- 数字选台输入 -->
+    <!-- 数字选台 -->
     <TextView
         android:id="@+id/live_digit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|right"
-        android:layout_marginTop="24dp"
-        android:layout_marginRight="32dp"
+        android:layout_marginTop="22dp"
+        android:layout_marginRight="30dp"
         android:background="@color/scrim"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
         android:textColor="@color/accent"
-        android:textSize="22sp"
+        android:textSize="32sp"
         android:textStyle="bold"
         android:visibility="gone" />
 
-    <!-- 左侧频道列表（可隐藏） -->
+    <!-- TVBox 式频道面板：按确定键弹出，覆盖画面，选完自动收起 -->
     <LinearLayout
         android:id="@+id/live_channel_panel"
-        android:layout_width="340dp"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/scrim"
-        android:orientation="vertical"
-        android:paddingTop="20dp"
-        android:paddingBottom="12dp"
+        android:background="#D9101014"
+        android:orientation="horizontal"
         android:visibility="gone">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingBottom="8dp"
-            android:text="@string/channel_list_hint"
-            android:textColor="@color/text_secondary"
-            android:textSize="13sp" />
-
+        <!-- 左：分类 -->
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/live_channel_list"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:id="@+id/live_group_list"
+            android:layout_width="230dp"
+            android:layout_height="match_parent"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="18dp"
+            android:clipToPadding="false"
+            android:paddingLeft="14dp"
+            android:paddingRight="8dp"
+            android:scrollbars="none" />
+
+        <!-- 右：频道 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:paddingLeft="12dp"
-            android:paddingRight="12dp"
-            android:scrollbars="vertical" />
+            android:orientation="vertical"
+            android:paddingTop="18dp"
+            android:paddingBottom="18dp">
+
+            <TextView
+                android:id="@+id/live_now"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingLeft="10dp"
+                android:paddingBottom="10dp"
+                android:textColor="@color/accent"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/live_channel_list"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:paddingRight="24dp"
+                android:scrollbars="vertical" />
+        </LinearLayout>
     </LinearLayout>
 </FrameLayout>
