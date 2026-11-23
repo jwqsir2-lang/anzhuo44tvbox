@@ -279,9 +279,12 @@ public class NavigationStateTest {
         server.setDispatcher(dispatcher);
         ((LocalApplication) RuntimeEnvironment.getApplication()).configure(sources);
         controller = Robolectric.buildActivity(MainActivity.class).create().start().resume().postResume().visible();
-        // 默认首页已改为 DOUBAN（豆瓣热播），本组用例针对「影视」页，需显式切过去。
-        controller.get().selectTab(MainActivity.Tab.HOME, false);
-        controller.get().getSupportFragmentManager().executePendingTransactions();
+        // 默认首页是 DOUBAN，本组用例针对「影视」页，需显式切过去并推动一次事务，
+        // 让 HomeFragment 的 onCreateView/reload 真正跑起来（否则 state_retry 永不可见）。
+        MainActivity rebuilt = controller.get();
+        rebuilt.selectTab(MainActivity.Tab.HOME, false);
+        rebuilt.getSupportFragmentManager().executePendingTransactions();
+        Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
     }
 
     private static MockResponse homeMovies() {
