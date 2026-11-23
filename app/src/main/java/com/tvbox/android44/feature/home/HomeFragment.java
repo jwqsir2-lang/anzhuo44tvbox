@@ -221,14 +221,6 @@ public class HomeFragment extends Fragment implements PageFocusState.Owner, Hist
         }
         continueAdapter.setEntries(entries);
         continueSection.setVisibility(entries.isEmpty() ? View.GONE : View.VISIBLE);
-        if (heroContainer != null) {
-            ViewGroup.LayoutParams params = heroContainer.getLayoutParams();
-            int height = entries.isEmpty() ? fullHeroHeight : getResources().getDimensionPixelSize(R.dimen.compact_home_hero_height);
-            if (params.height != height) {
-                params.height = height;
-                heroContainer.setLayoutParams(params);
-            }
-        }
         if (entries.isEmpty()) {
             if (isContinueBookmark()) pendingFocus = null;
             if (wasFocused) {
@@ -274,21 +266,10 @@ public class HomeFragment extends Fragment implements PageFocusState.Owner, Hist
 
     // ===== 影院主题（文档 05 §4.2）=====
 
-    private android.widget.ImageView heroBackdrop;
-    private android.widget.TextView heroTitle;
-    private android.widget.TextView heroMeta;
-    private View heroContainer;
-    private int fullHeroHeight;
     private PosterEntry heroEntry;
 
     private void bindCinemaTheme(View root) {
-        // 传统布局已移除 Hero 区（大图 + 标题 + 播放/详情），
-        // 这里只绑定左侧竖向导航；heroContainer 保持 null，
-        // updateHeroFromEntries() 会在入口处直接返回。
-        heroContainer = null;
-        heroBackdrop = null;
-        heroTitle = null;
-        heroMeta = null;
+        // 传统布局已移除 Hero 区，只绑定左侧竖向导航。
         bindRail(root, R.id.cinema_nav_history, MainActivity.Tab.HISTORY);
         bindRail(root, R.id.cinema_nav_search, MainActivity.Tab.SEARCH);
         bindRail(root, R.id.cinema_nav_recommend, MainActivity.Tab.RECOMMEND);
@@ -326,30 +307,9 @@ public class HomeFragment extends Fragment implements PageFocusState.Owner, Hist
         onCardClick(heroEntry);
     }
 
-    /** 内容刷新后取首个条目填充 Hero；无内容时隐藏。 */
+    /** 传统布局已无 Hero 区，保留方法给调用方兜底。 */
     private void updateHeroFromEntries() {
-        if (heroContainer == null) {
-            return;
-        }
-        if (adapter.entries().isEmpty()) {
-            heroContainer.setVisibility(View.GONE);
-            heroEntry = null;
-            return;
-        }
-        heroEntry = adapter.entries().get(0);
-        heroContainer.setVisibility(View.VISIBLE);
-        heroTitle.setText(heroEntry.title);
-        heroMeta.setText(heroEntry.subtitle == null ? "" : heroEntry.subtitle);
-        if (heroEntry.posterUrl != null && !heroEntry.posterUrl.isEmpty()) {
-            Glide.with(heroBackdrop.getContext())
-                    .load(heroEntry.posterUrl)
-                    .centerCrop()
-                    .placeholder(R.drawable.poster_placeholder)
-                    .into(heroBackdrop);
-        } else {
-            Glide.with(heroBackdrop.getContext()).clear(heroBackdrop);
-            heroBackdrop.setImageResource(R.drawable.poster_placeholder);
-        }
+        heroEntry = null;
     }
 
     // ===== 分类行 =====
@@ -707,7 +667,6 @@ public class HomeFragment extends Fragment implements PageFocusState.Owner, Hist
         TvBoxApp.get().history().removeListener(this);
         super.onDestroyView();
         continueGrid = null;
-        heroContainer = null;
         grid = null;
         state = null;
     }
