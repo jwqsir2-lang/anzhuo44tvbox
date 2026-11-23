@@ -61,8 +61,7 @@ public class SettingsFragment extends Fragment {
     private static final int[][] REMOTE_ROWS = {
             {R.id.settings_theme, R.id.settings_font, R.id.settings_filter},
             {R.id.settings_iptv, R.id.settings_iptv_test},
-            {R.id.settings_api},
-            {R.id.settings_api_manage, R.id.settings_api_qr},
+            {R.id.settings_api, R.id.settings_api_manage, R.id.settings_api_qr},
             {R.id.settings_ai_provider},
             {R.id.settings_ai_key},
             {R.id.settings_ai_qr},

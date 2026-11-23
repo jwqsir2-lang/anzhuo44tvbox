@@ -418,12 +418,12 @@ public class NavigationStateTest {
         // 上下换行统一落在行首：IPTV 行首就是地址入口
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_iptv, settings);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_api, settings);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_api_manage, settings);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_provider, settings);
-        direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_api_manage, settings);
+        // 地址 / 管理 / 二维码 同一排：左右切换
+        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_api_manage, settings);
         direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_api_qr, settings);
+        direction(KeyEvent.KEYCODE_DPAD_LEFT, R.id.settings_api_manage, settings);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_provider, settings);
-        direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_api_manage, settings);
+        direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_api, settings);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_provider, settings);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_key, settings);
         direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_qr, settings);
