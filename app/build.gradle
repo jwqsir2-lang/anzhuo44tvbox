@@ -22,8 +22,8 @@ android {
         applicationId "com.tvbox.android44"
         minSdk 16          // Android 4.1 / API 16 compatibility baseline
         targetSdk 28       // 侧载版基线
-        versionCode injectedProp('TVBOX_VERSION_CODE', '21').toInteger()
-        versionName injectedProp('TVBOX_VERSION_NAME', '0.4.1')
+        versionCode injectedProp('TVBOX_VERSION_CODE', '30').toInteger()
+        versionName injectedProp('TVBOX_VERSION_NAME', '0.5.0')
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
 
