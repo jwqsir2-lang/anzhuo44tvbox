@@ -414,28 +414,28 @@ public class NavigationStateTest {
 
         assertTrue(settings.findViewById(R.id.settings_font).requestFocus());
         direction(KeyEvent.KEYCODE_DPAD_UP, R.id.nav_settings);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_font);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_font, settings);
         // 上下换行统一落在行首：IPTV 行首就是地址入口
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_iptv);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_api);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_api_manage);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_provider);
-        direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_api_manage);
-        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_api_qr);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_provider);
-        direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_api_manage);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_provider);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_key);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_qr);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_auto_line);
-        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_stats);
-        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_stats_clear);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_iptv, settings);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_api, settings);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_api_manage, settings);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_provider, settings);
+        direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_api_manage, settings);
+        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_api_qr, settings);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_provider, settings);
+        direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_api_manage, settings);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_provider, settings);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_key, settings);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_ai_qr, settings);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_auto_line, settings);
+        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_stats, settings);
+        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_stats_clear, settings);
         // 最后一行的行首是开关，更新按钮在其右侧
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_check_toggle);
-        direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_auto_line);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_check_toggle);
-        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_update_action);
-        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_check_toggle);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_check_toggle, settings);
+        direction(KeyEvent.KEYCODE_DPAD_UP, R.id.settings_auto_line, settings);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_check_toggle, settings);
+        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_update_action, settings);
+        direction(KeyEvent.KEYCODE_DPAD_DOWN, R.id.settings_check_toggle, settings);
     }
 
     /** 直播源地址行必须能用遥控器选到，并左右进入「测试」按钮。 */
@@ -448,16 +448,21 @@ public class NavigationStateTest {
         assertNotNull(settings);
 
         assertTrue(settings.findViewById(R.id.settings_iptv).requestFocus());
-        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_iptv_test);
-        direction(KeyEvent.KEYCODE_DPAD_LEFT, R.id.settings_iptv);
+        direction(KeyEvent.KEYCODE_DPAD_RIGHT, R.id.settings_iptv_test, settings);
+        direction(KeyEvent.KEYCODE_DPAD_LEFT, R.id.settings_iptv, settings);
     }
 
     private void direction(int code, int target) {
+        direction(code, target, controller.get().getWindow().getDecorView());
+    }
+
+    /** 设置页控件挂在 Fragment 视图树上，Activity.findViewById 找不到，需指定查找根。 */
+    private void direction(int code, int target, View root) {
         View focused = controller.get().getWindow().getDecorView().findFocus();
-        assertTrue("D-pad " + code + " from " + focused + " to " + controller.get().findViewById(target),
+        assertTrue("D-pad " + code + " from " + focused + " to " + root.findViewById(target),
                 controller.get().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, code)));
         controller.get().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
-        assertTrue(controller.get().findViewById(target).hasFocus());
+        assertTrue(root.findViewById(target).hasFocus());
     }
 
     @Test public void focusedSearchEditorReceivesDigitsAndShortcutsDoNotRepeat() {
