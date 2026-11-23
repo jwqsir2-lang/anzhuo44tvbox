@@ -166,15 +166,34 @@ public class NavigationStateTest {
         }, "primary", "backup");
 
         MainActivity activity = controller.get();
-        // restartWithSources 已切到 HOME 并 commit 过；这里再推一次事务，
-        // 然后重新取 state_retry（不能在 await 前缓存引用，视图可能刚被替换）。
         activity.getSupportFragmentManager().executePendingTransactions();
         Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
         assertNotNull("HOME 视图未挂载", activity.findViewById(R.id.home_grid));
-        await(() -> {
-            View r = activity.findViewById(R.id.state_retry);
-            return r != null && r.getVisibility() == View.VISIBLE;
-        });
+
+        // 逐帧推进，把每轮真实状态记下来，失败时直接暴露卡点。
+        StringBuilder trace = new StringBuilder();
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(8);
+        View retryView = null;
+        while (System.nanoTime() < deadline) {
+            Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+            retryView = activity.findViewById(R.id.state_retry);
+            View stateView = activity.findViewById(R.id.home_state);
+            trace.append("[retry=").append(retryView == null ? "null" : retryView.getVisibility())
+                 .append(",state=").append(stateView == null ? "null" : stateView.getVisibility())
+                 .append(",loading=").append(activity.findViewById(R.id.state_loading) == null ? "null"
+                        : activity.findViewById(R.id.state_loading).getVisibility())
+                 .append(",msg=").append(activity.findViewById(R.id.state_message) == null ? "null"
+                        : String.valueOf(((android.widget.TextView) activity.findViewById(R.id.state_message)).getText()))
+                 .append(",grid=").append(activity.findViewById(R.id.home_grid) == null ? "null"
+                        : ((RecyclerView) activity.findViewById(R.id.home_grid)).getAdapter() == null ? "noadapter"
+                        : ((RecyclerView) activity.findViewById(R.id.home_grid)).getAdapter().getItemCount())
+                 .append(",pages=").append(pages)
+                 .append("]\n");
+            if (retryView != null && retryView.getVisibility() == View.VISIBLE) break;
+            new java.util.concurrent.CountDownLatch(1).await(50, TimeUnit.MILLISECONDS);
+        }
+        assertNotNull("state_retry 不存在: " + trace, retryView);
+        assertEquals("重试按钮未出现\n" + trace, View.VISIBLE, retryView.getVisibility());
         assertEquals(Arrays.asList("/primary/", "/backup/"), new ArrayList<>(pages));
         primaryRecovered.set(true);
         View retry = activity.findViewById(R.id.state_retry);
