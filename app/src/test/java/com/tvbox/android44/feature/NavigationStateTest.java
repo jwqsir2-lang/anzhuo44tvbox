@@ -92,6 +92,19 @@ public class NavigationStateTest {
     @After public void tearDown() throws Exception {
         controller.pause().stop().destroy(); TvBoxApp.get().executors().shutdown(); server.shutdown();
     }
+    /**
+     * HOME 页（影视）自己的视图根。
+     * 注意：Activity.findViewById 会命中被 hide 的 DOUBAN 视图里同名的 state_* 控件
+     * （两者都 inflate 了 view_state.xml），所以 home_* 系列一律从这个根上找。
+     */
+    private View homeRoot() {
+        HomeFragment home = (HomeFragment) controller.get()
+                .getSupportFragmentManager().findFragmentByTag("HOME");
+        assertNotNull("HOME Fragment 应已创建", home);
+        assertNotNull("HOME 视图应已 inflate", home.getView());
+        return home.getView();
+    }
+
     private void await(BooleanSupplier condition) throws Exception {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(8);
         while (!condition.getAsBoolean() && System.nanoTime() < deadline) {
@@ -102,7 +115,7 @@ public class NavigationStateTest {
         assertTrue("UI did not reach expected state", condition.getAsBoolean());
     }
     @Test public void homeUsesSourceContentAndSavesCategorySelection() throws Exception {
-        RecyclerView tabs = controller.get().findViewById(R.id.home_tabs);
+        RecyclerView tabs = homeRoot().findViewById(R.id.home_tabs);
         await(() -> tabs.getAdapter().getItemCount() == 2);
         tabs.measure(android.view.View.MeasureSpec.makeMeasureSpec(1200, 1073741824),
                 android.view.View.MeasureSpec.makeMeasureSpec(100, 1073741824));
@@ -138,8 +151,8 @@ public class NavigationStateTest {
             }
         }, "primary", "empty", "working");
 
-        RecyclerView grid = controller.get().findViewById(R.id.home_grid);
-        RecyclerView tabs = controller.get().findViewById(R.id.home_tabs);
+        RecyclerView grid = homeRoot().findViewById(R.id.home_grid);
+        RecyclerView tabs = homeRoot().findViewById(R.id.home_tabs);
         ChipAdapter chips = (ChipAdapter) tabs.getAdapter();
         await(() -> grid.getAdapter().getItemCount() == 1 && chips.indexOf("7") >= 0);
         assertEquals(Arrays.asList("/primary/", "/empty/", "/working/"), new ArrayList<>(pages));
@@ -148,7 +161,7 @@ public class NavigationStateTest {
         Movie shown = (Movie) ((PosterGridAdapter) grid.getAdapter()).entries().get(0).payload;
         assertEquals("working", shown.apiLineId);
         assertEquals("primary", TvBoxApp.get().settings().currentApi().id);
-        android.widget.TextView status = controller.get().findViewById(R.id.home_status);
+        android.widget.TextView status = homeRoot().findViewById(R.id.home_status);
         assertTrue(status.getText().toString().contains("working"));
         assertFalse(status.isFocusable());
     }
@@ -172,17 +185,17 @@ public class NavigationStateTest {
                 .getSupportFragmentManager().findFragmentByTag("HOME");
         assertNotNull("HOME Fragment 应已创建", home);
         assertNotNull("HOME 视图应已 inflate", home.getView());
-        final View homeRoot = home.getView();
+        final View homeView = home.getView();
 
         await(() -> {
-            View r = homeRoot.findViewById(R.id.state_retry);
+            View r = homeView.findViewById(R.id.state_retry);
             return r != null && r.getVisibility() == View.VISIBLE;
         });
         assertEquals(Arrays.asList("/primary/", "/backup/"), new ArrayList<>(pages));
 
         primaryRecovered.set(true);
-        homeRoot.findViewById(R.id.state_retry).performClick();
-        final RecyclerView grid = homeRoot.findViewById(R.id.home_grid);
+        homeView.findViewById(R.id.state_retry).performClick();
+        final RecyclerView grid = homeView.findViewById(R.id.home_grid);
         await(() -> grid.getAdapter() != null && grid.getAdapter().getItemCount() == 1);
         assertEquals(Arrays.asList("/primary/", "/backup/", "/primary/"), new ArrayList<>(pages));
         Movie shown = (Movie) ((PosterGridAdapter) grid.getAdapter()).entries().get(0).payload;
@@ -307,7 +320,7 @@ public class NavigationStateTest {
         assertEquals("影片一", saved.getString("query"));
     }
     @Test public void bookmarkTracksStableCardAfterMetadataChangesAndReordering() throws Exception {
-        RecyclerView grid = controller.get().findViewById(R.id.home_grid);
+        RecyclerView grid = homeRoot().findViewById(R.id.home_grid);
         await(() -> grid.getAdapter().getItemCount() == 2);
         grid.setItemAnimator(null);
         grid.measure(android.view.View.MeasureSpec.makeMeasureSpec(1200, 1073741824),
@@ -342,7 +355,7 @@ public class NavigationStateTest {
     }
 
     @Test public void activityRecreationRestoresSelectedSourceCategory() throws Exception {
-        RecyclerView tabs = controller.get().findViewById(R.id.home_tabs);
+        RecyclerView tabs = homeRoot().findViewById(R.id.home_tabs);
         await(() -> tabs.getAdapter().getItemCount() == 2);
         tabs.measure(android.view.View.MeasureSpec.makeMeasureSpec(1200, 1073741824),
                 android.view.View.MeasureSpec.makeMeasureSpec(100, 1073741824));
@@ -350,7 +363,7 @@ public class NavigationStateTest {
         tabs.findViewHolderForAdapterPosition(1).itemView.performClick();
         Bundle saved = new Bundle(); controller.saveInstanceState(saved).pause().stop().destroy();
         controller = Robolectric.buildActivity(MainActivity.class).create(saved).start().resume().visible();
-        RecyclerView restored = controller.get().findViewById(R.id.home_tabs);
+        RecyclerView restored = homeRoot().findViewById(R.id.home_tabs);
         await(() -> restored.getAdapter().getItemCount() == 2);
         ChipAdapter chips = (ChipAdapter) restored.getAdapter();
         assertTrue(chips.chips().get(chips.indexOf("1")).selected);
