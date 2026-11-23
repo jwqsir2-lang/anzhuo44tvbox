@@ -144,10 +144,15 @@ public class NavigationStateTest {
                             : new MockResponse().setBodyDelay(300, TimeUnit.MILLISECONDS)
                                     .setBody("{\"class\":[{\"type_id\":9,\"type_name\":\"旧分类\"}]}");
                 }
-                pages.add(path);
+                // 只记录本轮关心的三个源；/api/ 是 setUp 默认源，restartWithSources 之前的
+                // 残留请求可能晚到，不参与断言。
+                if ("/primary/".equals(path) || "/empty/".equals(path) || "/working/".equals(path)) {
+                    pages.add(path);
+                }
                 if ("/primary/".equals(path)) return new MockResponse().setResponseCode(504);
                 if ("/empty/".equals(path)) return new MockResponse().setBody("{\"list\":[]}");
-                return homeMovies();
+                if ("/working/".equals(path)) return homeMovies();
+                return new MockResponse().setResponseCode(503);
             }
         }, "primary", "empty", "working");
 
