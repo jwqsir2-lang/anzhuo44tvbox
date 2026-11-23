@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  默认主题首页（传统 TVBox 风格）
+  改动：历史区从顶部移到海报墙之后，仅在有历史时显示且压缩为一行，
+        使海报墙获得全部剩余纵向空间。
+-->
+<com.tvbox.android44.common.StateLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/home_state"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/home_tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/home_sub_tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:scrollbars="none" />
+
+        <TextView
+            android:id="@+id/home_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/home_grid"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_weight="1"
+            android:scrollbars="none" />
+
+        <include layout="@layout/section_home_continue" />
+    </LinearLayout>
+</com.tvbox.android44.common.StateLayout>

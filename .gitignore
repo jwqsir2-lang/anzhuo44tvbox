@@ -1,0 +1,13 @@
+.gradle/
+build/
+**/build/
+local.properties
+*.iml
+.idea/
+signing/
+*.jks
+*.keystore
+dist/*.apk
+__pycache__/
+dist/release-validation/
+dist/release-v*/

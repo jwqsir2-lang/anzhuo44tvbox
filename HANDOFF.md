@@ -1,0 +1,76 @@
+﻿# 当前接手说明
+
+更新：2026-11-21。工程为 `ZxxXinI/tvbox-android4`，独立包 `com.tvbox.android44`；允许维护本仓库 `app/`，不依赖上游 Compose/Media3 模块。
+
+2026-11-21 09:09 发布 v0.0.7 / code8 为 Latest。发布提交 `0b34020`，原签名与 minSdk16 保留。继续观看、手机扫码搜索、首页备用源和遥控器优化均已纳入。GitHub Actions 和公开 OTA 下载核验通过。详情见 [v0.0.7 发布记录](docs/29-v0.0.7发布记录.md)。
+
+2026-10-08 当前更新：TVBox4.1+ / v0.0.4/code4，最低 API16，已公开为Latest。用户反馈扫码与手机 AI 配置测试没有问题；已删除“添加自定义源”和“模型”按钮，保留扫码/管理及提供方/Key状态。发布源码/tag固定b08b267，原证书、公开APK/OTA下载核验通过；最终Linux CI两种变体各337项通过，Windows五项存储失败保留。普通构建默认原稳定清单地址，CI/测试禁用线上请求。当时安装本地code4测试包需手动覆盖正式包；v0.0.5发布后，code4正式包和同签名测试包已可OTA升级。投影系统安装器OTA仍需设备确认。以 [v0.0.4 记录](docs/20-v0.0.4发布记录.md) 为准，后文 v0.0.2/v0.0.3 为历史记录。
+
+2026-10-11 更新：v0.0.5/code5 已公开为 Latest，沿用原签名，修复播放遥控器焦点导航与上下集确认误触暂停。源码标签指向 `7016abe1f3799c19a03e70b0f4b41bc53b9f6e98`；公开APK 2,983,394字节，SHA-256 `2e95d01675b3abf69071e50233366cbaaf9584012a78d21be371d941873104a1`。稳定latest OTA清单和APK匿名下载核验一致；原签名v0.0.4可OTA升级。专项Debug/Release各86项此前已通过，版本递增发布未重跑测试；投影实体遥控器仍待用户实测。详情见 [v0.0.5发布记录](docs/22-v0.0.5发布记录.md)。
+
+2026-10-11 17:56 当前更新：v0.0.6/code7 已重新公开并设为 Latest；v0.0.5 保留。code6 首发 Release 已按用户要求删除并由新版本替换。设置页焦点修复提交 `56ae3e0`，版本码更新提交 `06a98c2`；标签 `v0.0.6` 指向 `06a98c265adbcbbd8b5f6da2653379ed2140358d`。沿用原证书，APK 2,988,717 字节，SHA-256 `66134b77c7e24ca0afb1259c6e59ea5c06f7830a7612b5f6d7f1e2dea4726a11`；stable OTA 清单 code7、加速 APK 下载均与本地哈希一致。GitHub Actions `38129832769` 全部通过，发布材料测试16项通过，焦点测试20项通过。未通过 ADB 复测投影。详情：[v0.0.6重发记录](docs/24-v0.0.6-OTA安装修复发布.md)。
+
+此前的 OTA修复工作区段落记录的是发布前状态；最终源码修改及自动化记录见 [OTA安装与保存回退](docs/23-OTA安装器与保存安装包回退.md)。
+
+2026-10-11 17:33 设置页遥控器焦点顺序修复：修复设置页方向下焦点跳项，改为显式行列导航；Settings 页隐藏/销毁时撤销顶部导航到页面控件的链接。`NavigationStateTest` 20 项覆盖 API16/19/23/28 通过，`lintDebug` 通过。初始手动测试包 `dist/TVBox4.1+-v0.0.6-settings-focus-test-final.apk` 为 code6，SHA-256 `38de7d7da537ffaedef35ff22bad8dc9f8eedb34578718ee9830fd45777cb2b82`；之后已由 code7 正式重发包替代。详情见 [设置页遥控器焦点顺序](docs/25-设置页遥控器焦点顺序.md)。
+
+2026-10-07 兼容性更新：用户授权将最低系统扩展为 Android 4.1 / API 16，保留包名和签名。新的源码、API 16 回归与设备验收边界见 [兼容扩展](docs/17-Android4.1兼容扩展.md)，覆盖本页历史 API 19 最低版本约定。
+
+2026-10-07 19:19 发布更新：v0.0.3/code3 已公开为 Latest，源码标签指向 43f9186，原证书、API 16 签名与公开 APK/OTA 下载核验通过。当前发布以 [v0.0.3 记录](docs/18-v0.0.3发布记录.md) 为准；下方 v0.0.2 准备内容保留为历史。
+
+先读 [docs/13-当前版本基线与验收清单.md](docs/13-当前版本基线与验收清单.md) 和 [VERIFICATION_REPORT.md](VERIFICATION_REPORT.md)。首页为当前视频源，直播入口保持隐藏；不要按旧文档恢复豆瓣首页或六入口导航。
+
+规划复查、已补实现与剩余验收见 [docs/14-文档规划复查与待补任务.md](docs/14-文档规划复查与待补任务.md)。本轮 P1/P2 源码缺口及流程回归已补齐；设备和正式发布仍待验收，P3 剩余布局建议见验证报告。
+
+## 已补全
+
+- OTA：安装权限、清单校验、流式下载校验、失败/取消清理与回调取消保护。
+- 请求：分类聚合独立子线程池、共享请求订阅取消隔离、视频源全局并发 3、正确超时分类。
+- 搜索/详情：晚到主源优先，稳定结果位置与卡片点击目标；补线在主线程追加、去重并尊重取消。
+- 历史：独立快照、排序去重、上限 100、损坏备份、原子替换、失败保留旧数据、播放器后台顺序保存。
+- 页面：卡片显式焦点、主页面字体缩放、分类/搜索词/列表焦点/详情选集保存，销毁回调保护，分页失败重试。
+- 播放闭环：统一返回请求与状态快照、详情选集/线路/焦点同步；真实缓冲事件与轮询接入、暂停/seek/开关保护；一次受控媒体类型回退。
+- 历史恢复与健康：线路/集标题匹配、近片尾从零恢复、首次详情失败确认旧 URL；健康初始化/写入/清空使用顺序磁盘队列与独立快照。
+- 启动更新：开关与清单接入、错误静默、进程内 15 分钟节流和同版本提示去重，仅确认后进入设置。
+- AI/扫码：请求与错误分类、取消后排队结果保护、推荐 View 代次和语音权限分支；扫码固定模式/单地址、主动到期关闭、一次成功与失败上限，响应后再关闭弹窗。
+- 文案与列表：布局资源化、相关动态文案格式化，分类/线路/选集/推荐列表使用稳定 ID 和差异更新。
+- 工程：官方仓库与 wrapper 校验和、Debug/Release 自动测试和 Lint、CI、发布材料生成器及正式签名检查。
+
+## 源码入口
+
+| 范围 | 路径（相对 `app/src/main/java/com/tvbox/android44/`） |
+| --- | --- |
+| 组装与线程 | `app/TvBoxApp.java`、`common/AppExecutors.java` |
+| 视频请求与取消 | `data/repository/MovieRepository.java`、`data/remote/SourceRequestGate.java`、`CancelScope.java` |
+| 搜索与补线 | `MultiSourceSearch.java`、`DetailSupplement.java`（在 `data/repository/`） |
+| 首页与导航 | `feature/home/HomeFragment.java`、`feature/main/MainActivity.java` |
+| 焦点与卡片 | `common/PageFocusState.java`、`FocusScaler.java`、`common/ui/PosterGridAdapter.java` |
+| 历史 | `data/local/HistoryStore.java`、`JsonIo.java`、`feature/history/HistoryFragment.java` |
+| 播放与历史恢复 | `feature/player/PlayerActivity.java`、`VodMediaSources.java`、`domain/playback/PlaybackSelection.java` |
+| 健康 | `data/local/HealthStore.java`、`domain/model/LineHealth.java` |
+| 推荐与配置 | `data/remote/AiClient.java`、`data/repository/RecommendRepository.java`、`feature/settings/ConfigHttpServer.java` |
+| 更新 | `data/repository/UpdateRepository.java`、`data/remote/OtaClient.java`、`domain/parser/OtaManifestParser.java`、`domain/update/StartupUpdatePolicy.java` |
+
+测试在 `app/src/test/java/`；使用本地 MockWebServer，不请求生产内置源或真实模型。Robolectric 4.10.3 保留 API 19 支持，当前测试包含 API 19/23/28，仅用于测试。
+
+## v0.0.2 发布准备
+
+当前源码默认 0.0.2 / code 2，原公开版本为 0.0.1 / code 1。用户选择沿用原证书、保留覆盖升级，并上传原 keystore；已完成原证书 v1/v2 签名，最终 APK 内源码为已推送的 551c6e1，2,972,833 字节、SHA-256 ddcee039…af6616，材料副本与清单核对通过。原证书是调试证书，以 --allow-legacy-debug-upgrade 接受同证书递增版本，材料如实标注 legacy-debug-release；13 项策略回归通过，异证书验证包被拒绝。当前源码的在线 CI 失败，尚未创建 Release；用户已选择手动发布，完整压缩包、摘要与操作见 [发布记录](docs/15-v0.0.2发布准备与记录.md)。
+
+## 下一步设备与发布验收
+
+代码和云环境能完成的验证详见报告；以下需要实际设备/配置：
+
+1. API 19 物理盒子冷启动、遥控器全流程、真实 MP4/HLS 解码、播放管家与持续使用。
+2. API 19 与 API 26+ 的系统安装器、未知来源授权、同证书 OTA 升级。
+3. 用实际模型、局域网手机和视频接口验收 AI 推荐与扫码配置。
+4. 原私钥、版本递增与签名连续性已完成；用户在 GitHub 页面上传发布文件，并进行公开下载与线上清单校验。恢复云环境自动发布时才需应用 API 网络草稿。
+5. 源码已推送 main，当前线上 CI 失败、无产物，链接与具体限制见 docs/15；用户可在登录后的 GitHub 页面读取日志并处理，不能将本地通过替代线上结果。
+
+不要把上述“待验收”写成兼容完成。原始 `docs/Android4.4.zip` 保留不再同步，维护 Markdown 即可。
+
+## 构建、产物与回滚
+
+执行 README 中的一组完整命令；产物与报告在 `app/build/`。正式构建启用 `TVBOX_REQUIRE_RELEASE_SIGNING=true`；发布生成器默认拒绝调试签名。回滚使用已保留的上一版 APK 与清单，保持发布证书，不删除用户历史。
+
+源码提交与发布记录以 docs/15 的最新证据为准；根目录开发日志按日期保留历史过程，其旧设备结论不用于当前版本。
