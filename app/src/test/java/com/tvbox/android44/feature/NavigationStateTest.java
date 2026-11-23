@@ -166,14 +166,20 @@ public class NavigationStateTest {
         }, "primary", "backup");
 
         MainActivity activity = controller.get();
-        // restartWithSources 已切到 HOME 并 commit，这里把事务落盘再取视图
+        // restartWithSources 已切到 HOME 并 commit 过；这里再推一次事务，
+        // 然后重新取 state_retry（不能在 await 前缓存引用，视图可能刚被替换）。
         activity.getSupportFragmentManager().executePendingTransactions();
+        Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
         assertNotNull("HOME 视图未挂载", activity.findViewById(R.id.home_grid));
-        View retry = activity.findViewById(R.id.state_retry);
-        await(() -> retry.getVisibility() == View.VISIBLE);
+        await(() -> {
+            View r = activity.findViewById(R.id.state_retry);
+            return r != null && r.getVisibility() == View.VISIBLE;
+        });
         assertEquals(Arrays.asList("/primary/", "/backup/"), new ArrayList<>(pages));
         primaryRecovered.set(true);
-        activity.findViewById(R.id.state_retry).performClick();
+        View retry = activity.findViewById(R.id.state_retry);
+        assertNotNull("重试按钮应在全部来源失败后出现", retry);
+        retry.performClick();
         RecyclerView grid = activity.findViewById(R.id.home_grid);
         await(() -> grid.getAdapter().getItemCount() == 1);
         assertEquals(Arrays.asList("/primary/", "/backup/", "/primary/"), new ArrayList<>(pages));
