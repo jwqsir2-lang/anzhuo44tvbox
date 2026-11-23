@@ -172,37 +172,26 @@ public class NavigationStateTest {
         assertEquals("primary", shown.apiLineId);
     }
 
-    @Test public void homeContinuesUnfinishedHistoryUsingTheOriginalSourceAndProgress() throws Exception {
+    /**
+     * 首页不再提供「继续观看」区域：历史续播统一走「历史」页。
+     * 这里断言该区块已从首页布局中彻底移除，且刷新历史不会让首页崩掉。
+     */
+    @Test public void homeNoLongerRendersContinueWatchingSection() throws Exception {
         MainActivity activity = controller.get();
-        View section = activity.findViewById(R.id.home_continue_section);
-        RecyclerView row = activity.findViewById(R.id.home_continue_grid);
-        assertEquals(View.GONE, section.getVisibility());
+        assertNull("首页布局不应再包含继续观看区块",
+                activity.findViewById(R.id.home_continue_section));
+        assertNull("首页布局不应再包含继续观看列表",
+                activity.findViewById(R.id.home_continue_grid));
+
         List<WatchHistoryItem> items = new ArrayList<>();
         items.add(historyItem("finished", 99000));
-        items.add(historyItem("not-started", 0));
         for (int i = 0; i < 7; i++) items.add(historyItem("item-" + i, 30000));
         ((LocalApplication) RuntimeEnvironment.getApplication()).historyItems = items;
         HomeFragment home = (HomeFragment) activity.getSupportFragmentManager().findFragmentByTag("HOME");
+        // 历史变更回调仍会被触发，但首页不再渲染该区域，不得抛异常。
         home.onHistoryChanged();
-        await(() -> row.getAdapter().getItemCount() == 6);
-        assertEquals(View.VISIBLE, section.getVisibility());
-        PosterEntry first = ((PosterGridAdapter) row.getAdapter()).entries().get(0);
-        assertEquals("old-source|item-0", first.key);
-        assertEquals("第3集 · 30%", first.subtitle);
-        row.measure(View.MeasureSpec.makeMeasureSpec(1000, View.MeasureSpec.EXACTLY),
-                View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY));
-        row.layout(0, 0, 1000, 100);
-        View card = row.findViewHolderForAdapterPosition(0).itemView;
-        assertTrue(card.requestFocus());
-        assertEquals(R.id.nav_history, card.getNextFocusUpId());
-        card.performClick();
-        org.robolectric.shadows.ShadowActivity.IntentForResult started =
-                Shadows.shadowOf(activity).getNextStartedActivityForResult();
-        assertEquals(PlayerActivity.class.getName(), started.intent.getComponent().getClassName());
-        WatchHistoryItem history = (WatchHistoryItem) started.intent.getSerializableExtra(PlayerActivity.EXTRA_HISTORY_ITEM);
-        assertEquals("old-source", history.apiLineId);
-        assertEquals(2, history.episodeIndex);
-        assertEquals(30000, history.position);
+        Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+        assertNull(activity.findViewById(R.id.home_continue_section));
     }
 
     private static WatchHistoryItem historyItem(String id, long position) {
